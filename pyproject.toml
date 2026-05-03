@@ -30,7 +30,7 @@ llm_sas = "llm_sas.app:main"
 [project.urls]
 
 [build-system]
-requires = ["setuptools>=45", "wheel", "setuptools_scm>=8"]
+requires = ["setuptools>=45", "wheel", "setuptools_scm>=10.0.5"]
 build-backend = "setuptools.build_meta"
 
 [tool.setuptools.packages.find]
