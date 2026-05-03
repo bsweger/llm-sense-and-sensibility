@@ -1,0 +1,69 @@
+[project]
+name = "llm_sas"
+dynamic = ['version']
+description = "Presentation to de-mystify LLMs"
+authors = [{name = "Becky Sweger"}]
+maintainers = [{name = "Becky Sweger"}]
+license = "MIT"
+license-files = ["LICENSE"]
+
+requires-python = ">=3.12"
+readme = "README.md"
+
+dependencies = [
+    "rich",
+    "structlog",
+]
+
+[dependency-groups]
+dev = [
+    "coverage",
+    "pre-commit",
+    "pytest",
+    "pytest-random-order>=1.1.1",
+    "ruff",
+]
+
+[project.scripts]
+llm_sas = "llm_sas.app:main"
+
+[project.urls]
+
+[build-system]
+requires = ["setuptools>=45", "wheel", "setuptools_scm>=8"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+namespaces = true
+where = ["src"]
+
+[tool.setuptools_scm]
+fallback_version = "0.0.0.dev0"
+local_scheme = "no-local-version"
+
+[tool.pytest.ini_options]
+addopts = "--random-order"
+testpaths = [
+    "test",
+]
+
+[tool.ruff]
+line-length = 120
+
+[tool.ruff.lint]
+extend-select = [
+    "I",  # isort
+    "Q",  # flake8-quotes
+    "S",  # flake8-bandit security rules
+]
+
+[tool.ruff.lint.extend-per-file-ignores]
+"test/**/*.py" = [
+    # at least this three should be fine in tests:
+    "S101",  # allow assert in tests
+    "S603",  # subprocess commands in test suite not subject to untrusted input
+    "S607",  # allow subprocess python-based commands in tests
+]
+
+[tool.uv]
+exclude-newer = "7 days"
