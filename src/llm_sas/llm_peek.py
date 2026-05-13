@@ -21,20 +21,6 @@ def _(mo):
 
 @app.cell
 def _():
-    print("what's going on?")
-    return
-
-
-@app.cell(hide_code=True)
-def _(mo):
-    mo.md(r"""
-    # Hi
-    """)
-    return
-
-
-@app.cell
-def _():
     from pathlib import Path
 
     import torch
