@@ -1,5 +1,9 @@
 **/.DS_Store
 
+# notebook stuff
+**/__marimo__
+**/layouts
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
