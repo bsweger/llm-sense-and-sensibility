@@ -19,6 +19,9 @@ dependencies = [
     "structlog",
     "torch>=2.11.0",
     "transformers>=5.7.0",
+    "torch>=2.11.0",
+    "transformers>=5.7.0",
+    "urllib3>=2.7.0",
 ]
 
 [dependency-groups]
@@ -78,7 +81,7 @@ extend-select = [
 ]
 
 [tool.uv]
-exclude-newer = "7 days"
+exclude-newer = "5 days"
 
 [tool.marimo.ai.models]
 chat_model = "ollama/qwen3.6:27b"
