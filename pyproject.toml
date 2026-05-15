@@ -11,29 +11,21 @@ requires-python = ">=3.12"
 readme = "README.md"
 
 dependencies = [
-    "ipywidgets>=8.1.8",
-    "jupyter>=1.1.1",
-    "marimo>=0.23.4",
-    "pydantic-ai>=1.89.1",
     "rich",
     "structlog",
     "torch>=2.11.0",
     "transformers>=5.7.0",
-    "torch>=2.11.0",
-    "transformers>=5.7.0",
     "urllib3>=2.7.0",
+    "streamlit>=1.57.0",
 ]
 
 [dependency-groups]
 dev = [
-    "altair>=6.1.0",
     "coverage",
-    "nbformat>=5.10.4",
+    "huggingface-hub>=1.14.0",
     "pre-commit",
     "pytest",
     "pytest-random-order>=1.1.1",
-    "python-lsp-ruff>=2.3.1",
-    "python-lsp-server>=1.14.0",
     "ruff",
     "ty>=0.0.34",
     "websockets>=16.0",
@@ -82,14 +74,3 @@ extend-select = [
 
 [tool.uv]
 exclude-newer = "5 days"
-
-[tool.marimo.ai.models]
-chat_model = "ollama/qwen3.6:27b"
-edit_model = "ollama/qwen3.6:27b"
-autocomplete_model = "ollama/qwen3.6:27b"
-
-[tool.marimo.ai.ollama]
-base_url = "http://localhost:11434/v1/"
-
-[tool.marimo.language_servers.ty]
-enabled = true
