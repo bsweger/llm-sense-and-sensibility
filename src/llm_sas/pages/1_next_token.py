@@ -14,7 +14,7 @@ hf_logging.set_verbosity_error()
 TOP_K = 5
 BAR = "█"
 BAR_W = 30
-DEFAULT_PROMPT = "The cat sat on the"
+DEFAULT_PROMPT = "I like to think"
 
 
 @st.cache_resource(show_spinner="Loading GPT-2 (one-time, ~500MB)…")
@@ -102,8 +102,8 @@ def render_candidates(candidates):
 
     if not st.session_state.revealed:
         rows = "<br>".join(
-            f"<span style='font-family:monospace;color:#9ca3af'>"
-            f"{i + 1}. ?{'░' * BAR_W:>{BAR_W + 4}}   ?.?%</span>"
+            f"<span style='font-family:monospace;white-space:pre;color:#9ca3af'>"
+            f"{i + 1}. {'?':<14} {'░' * BAR_W:<{BAR_W}}   ?.?%</span>"
             for i in range(len(candidates))
         )
         st.markdown(
@@ -120,7 +120,7 @@ def render_candidates(candidates):
         weight = "bold" if i == 0 else "normal"
         color = "#15803d" if i == 0 else "#1f2937"
         rows.append(
-            f"<span style='font-family:monospace;font-weight:{weight};color:{color};font-size:15px'>"
+            f"<span style='font-family:monospace;white-space:pre;font-weight:{weight};color:{color};font-size:15px'>"
             f"{i + 1}. {label:<14} {bar:<{BAR_W}} {pct:>5.1f}%</span>"
         )
     st.markdown(
@@ -182,7 +182,7 @@ def render_action_buttons(candidates, tokenizer):
 # ---------------------------------------------------------------------------
 # Page body
 # ---------------------------------------------------------------------------
-st.title("Part 1 — Text as Prediction")
+st.title("Demo 1 — Text as Prediction")
 st.markdown(
     """
     LLMs are next-token predictors. At each step the model produces a probability

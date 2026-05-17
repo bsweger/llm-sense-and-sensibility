@@ -8,7 +8,7 @@ st.markdown(
 
     Use the sidebar to navigate between demos.
 
-    ### Part 1 — Next-token prediction
+    ### Demo 1 — Next-token prediction
     Step through a sentence one token at a time. The model produces a probability
     distribution over the vocabulary at each step; you choose which candidate to
     accept. Candidates are hidden by default so the audience can guess first.
