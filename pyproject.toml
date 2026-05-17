@@ -32,7 +32,7 @@ dev = [
 ]
 
 [project.scripts]
-llm_sas = "llm_sas.app:main"
+llmdemo = "llm_sas.app:main"
 
 [project.urls]
 
