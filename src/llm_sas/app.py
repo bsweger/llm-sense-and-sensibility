@@ -1,27 +1,21 @@
+"""Entry point for Streamlit handoff."""
+
+import sys
+from pathlib import Path
+
 import structlog
-from rich.console import Console
-from rich.panel import Panel
+from streamlit.web import cli as stcli
+
+from llm_sas import PROJECT_DIR
+
 
 logger = structlog.get_logger()
 
 
 def main():
-    """llm_sas starting point."""
-    logger.info("starting llm_sas...")
-
-    console = Console()
-    console.print(
-        Panel(
-            ":tada: Hello from the llm_sas Python package!",
-            border_style="green",
-            expand=False,
-            padding=(1, 4),
-            subtitle="[italic]created by pyprefab[/italic]",
-            subtitle_align="right",
-            title="llm_sas",
-            title_align="left",
-        )
-    )
+    app_path = PROJECT_DIR / "demo.py"
+    sys.argv = ["streamlit", "run", str(app_path)]
+    sys.exit(stcli.main())
 
 
 if __name__ == "__main__":
