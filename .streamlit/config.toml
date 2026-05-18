@@ -1,0 +1,12 @@
+# Streamlit chrome theme — Murderbot-inspired.
+#
+# Keep in sync with src/llm_sas/theme.py: both files express the same palette,
+# one for the framework chrome (this file) and one for in-component colors
+# (theme.py). If you tweak the palette, update both.
+
+[theme]
+base = "light"
+primaryColor = "#9a3412"             # burnt amber HUD — buttons, sliders, focus rings, links
+backgroundColor = "#fafaf9"          # very light stone — main canvas
+secondaryBackgroundColor = "#e7e5e4" # stone — sidebar, code blocks, info boxes
+textColor = "#1f2937"                # near-black — body text

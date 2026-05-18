@@ -11,6 +11,8 @@ import torch
 from transformers import AutoModelForCausalLM, AutoTokenizer
 from transformers import logging as hf_logging
 
+from llm_sas.theme import BODY_TEXT, HIGHLIGHT_BG, HUD_ACCENT
+
 hf_logging.set_verbosity_error()
 
 TOP_K = 10  # number of candidate bars to display
@@ -145,7 +147,9 @@ def render_sentence(tokenizer):
     text = tokenizer.decode(token_ids)
     toks = text.split()
     hl = " ".join(
-        f"<mark style='background:#dbeafe;padding:2px 6px;border-radius:4px'>{t}</mark>" if i == len(toks) - 1 else t
+        f"<mark style='background:{HIGHLIGHT_BG};padding:2px 6px;border-radius:4px'>{t}</mark>"
+        if i == len(toks) - 1
+        else t
         for i, t in enumerate(toks)
     )
     st.markdown(
@@ -160,7 +164,7 @@ def _candidate_rows_html(candidates, scale_max_pct, header, label_w, bar_w):
     for i, (label, _tid, pct) in enumerate(candidates):
         bar = BAR * round(pct / scale_max_pct * bar_w) if scale_max_pct > 0 else ""
         weight = "bold" if i == 0 else "normal"
-        color = "#15803d" if i == 0 else "#1f2937"
+        color = HUD_ACCENT if i == 0 else BODY_TEXT
         rows.append(
             f"<span style='font-family:monospace;white-space:pre;font-weight:{weight};color:{color};font-size:15px'>"
             f"{i + 1}. {label:<{label_w}} {bar:<{bar_w}} {pct:>5.1f}%</span>"

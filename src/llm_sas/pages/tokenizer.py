@@ -5,12 +5,15 @@ Show how a model converts a prompt into integer token ids, and what each id
 decodes back to as a string. Different tokenizers slice the same text very
 differently — switch the model in the sidebar to compare.
 """
+
 from textwrap import dedent
 
 import polars as pl
 import streamlit as st
 from transformers import AutoTokenizer
 from transformers import logging as hf_logging
+
+from llm_sas.theme import BODY_TEXT, TOKEN_COLORS
 
 hf_logging.set_verbosity_error()
 
@@ -26,18 +29,6 @@ DEFAULT_PROMPT = dedent("""\
 
     "That's the dumbest thing I've ever heard."
     """)
-
-# Token pill palette — inspired by the Murderbot Apple TV show: muted corporate-
-# dystopia tones with an amber/red HUD accent. Color carries no meaning; it just
-# chunks adjacent tokens visually. Kept light so dark text stays legible.
-TOKEN_COLORS = [
-    "#e7e5e4",  # stone — corporate interior beige
-    "#d4d4d8",  # gunmetal — SecUnit armor
-    "#fed7aa",  # amber — HUD targeting overlay
-    "#b6c8a5",  # muted moss — Preservation Alliance survey team
-    "#fecaca",  # red — alert / warning indicator
-]
-ID_COLOR = "#9a3412"  # burnt amber, echoing HUD text
 
 
 @st.cache_resource(show_spinner=True)
@@ -85,8 +76,8 @@ def format_inline_html(rows: list[tuple[int, int, str, str]], colors: list[str] 
             f"<span style='display:inline-block;background:{bg};"
             f"padding:4px 8px;margin:3px 2px;border-radius:4px;"
             f"font-family:monospace;line-height:1.4;vertical-align:top;'>"
-            f"<span style='font-size:15px;color:#111827;white-space:pre'>{_visible(decoded)}</span>"
-            f"<span style='display:block;font-size:10px;color:{ID_COLOR};text-align:center'>{tid}</span>"
+            f"<span style='font-size:15px;color:{BODY_TEXT};white-space:pre'>{_visible(decoded)}</span>"
+            f"<span style='display:block;font-size:10px;color:{BODY_TEXT};text-align:center'>{tid}</span>"
             f"</span>"
         )
     return "<div style='line-height:1.8'>" + "".join(pills) + "</div>"
@@ -128,12 +119,7 @@ model_id = render_model_selector()
 with st.spinner(f"Loading {model_id} tokenizer…"):
     tokenizer = load_tokenizer(model_id)
 
-prompt = st.text_area(
-    "Prompt",
-    value=DEFAULT_PROMPT,
-    key="tokenizer_prompt",
-    height=200
-)
+prompt = st.text_area("Prompt", value=DEFAULT_PROMPT, key="tokenizer_prompt", height=200)
 
 rows = tokenize(tokenizer, prompt)
 
@@ -147,14 +133,14 @@ else:
     n_words = len(prompt.split())
 
     st.markdown(
-    f"""
+        f"""
     This prompt contains **{n_words}** words and **{n_tokens}** tokens, shown below:
 
     - `·` represents a space
     - `↵` represents a newline
 
     """
-)
+    )
 
     st.markdown(format_inline_html(rows), unsafe_allow_html=True)
 
@@ -163,10 +149,9 @@ else:
     st.markdown("#### Token detail")
     df = pl.DataFrame(
         {
-            "Token Position": [r[0]+1 for r in rows],
+            "Token Position": [r[0] + 1 for r in rows],
             "Token ID": [r[1] for r in rows],
             "Decoded": [_visible(r[3]) for r in rows],
         }
     )
     st.dataframe(df, width="stretch", hide_index=True, height="content")
-
