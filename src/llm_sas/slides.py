@@ -1,7 +1,14 @@
+# /// script
+# requires-python = ">=3.14"
+# dependencies = [
+#     "marimo>=0.23.6",
+# ]
+# ///
+
 import marimo
 
-__generated_with = "0.23.4"
-app = marimo.App(width="medium", layout_file="layouts/llm_peek.slides.json")
+__generated_with = "0.23.6"
+app = marimo.App(width="medium")
 
 
 @app.cell
@@ -109,7 +116,23 @@ def _(mo):
       score. Like a chess engine thinking several moves ahead instead of just
       the next move. Tends to produce safer, more coherent text but with
       less variety.
+
+
+
+      Other notes:
+
+      "See how it keeps repeating 'I've been a big fan'? This is GPT-2's most famous failure mode. The model self-confirms — once a phrase
+      ▎ appears, the next time it sees a similar context the same continuation has even higher probability. Sampling can't escape on its own
+      ▎ because the peak of the distribution IS the repeating word.
+      ▎
+      ▎ This is why every production LLM API — OpenAI, Anthropic, all of them — applies a 'repetition penalty' by default. It explicitly
+      ▎ suppresses tokens that have already appeared in the sequence. Without it, raw LLM output loops like what you're seeing."
     """)
+    return
+
+
+@app.cell
+def _():
     return
 
 
