@@ -29,7 +29,7 @@ dev = [
     "pytest",
     "pytest-random-order>=1.1.1",
     "ruff",
-    "ty>=0.0.34",
+    "ty>=0.0.35",
     "websockets>=16.0",
 ]
 
