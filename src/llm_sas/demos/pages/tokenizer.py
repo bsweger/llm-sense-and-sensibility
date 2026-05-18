@@ -84,15 +84,15 @@ st.markdown(
     """
 )
 
-model_id = render_model_selector(
+spec = render_model_selector(
     key="tokenizer_model",
     help=(
         "Each model has its own tokenizer. The same prompt can result in a different "
         "number of tokens and different token boundaries depending on which model you pick."
     ),
 )
-with st.spinner(f"Loading {model_id} tokenizer…"):
-    tokenizer = load_tokenizer(model_id)
+with st.spinner(f"Loading {spec.model_id} tokenizer…"):
+    tokenizer = load_tokenizer(spec)
 
 prompt = st.text_area("Prompt", value=DEFAULT_PROMPT, key="tokenizer_prompt", height=200)
 

@@ -106,7 +106,7 @@ def sample_token_id(token_ids, model, temperature, top_k):
 
 def sample_next_token():
     """Streamlit on_click shim: read state, call sample_token_id, append sampled token."""
-    _, model = load_model(st.session_state.active_model_id)
+    _, model = load_model(st.session_state.active_model)
     token_ids = st.session_state.token_ids
     if not token_ids:
         return
@@ -284,7 +284,7 @@ st.markdown(
 )
 
 init_state()
-model_id = render_model_selector(
+spec = render_model_selector(
     key="next_token_model",
     help=(
         "Different models were trained on different data and produce different "
@@ -292,13 +292,13 @@ model_id = render_model_selector(
         "sentence because tokenizers differ between model families."
     ),
 )
-with st.spinner(f"Loading {model_id}…"):
-    tokenizer, model = load_model(model_id)
+with st.spinner(f"Loading {spec.model_id}…"):
+    tokenizer, model = load_model(spec)
 
 # Seed token_ids on first run, and re-tokenize whenever the user switches models
 # (token ids are not portable across tokenizers).
-if st.session_state.token_ids is None or st.session_state.get("active_model_id") != model_id:
-    st.session_state.active_model_id = model_id
+if st.session_state.token_ids is None or st.session_state.get("active_model") != spec:
+    st.session_state.active_model = spec
     st.session_state.token_ids = tokenizer.encode(st.session_state.prompt_value or DEFAULT_PROMPT)
 
 sampling_on, temperature, top_k = render_sampling_controls()
