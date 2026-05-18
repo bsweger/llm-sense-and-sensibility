@@ -19,6 +19,7 @@ This is Python application with two main components:
 - Pre-commit hooks run automatically on commit and must pass
 - Run `uv run pre-commit run --all-files` to check before committing
 - Markdown files should have an 80-character line length limit
+- For data manipulation, prefer polars over pandas
 
 ## Commands
 
