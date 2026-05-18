@@ -12,7 +12,7 @@ from transformers import logging as hf_logging
 
 hf_logging.set_verbosity_error()
 
-TOP_K = 5  # number of candidate bars to display
+TOP_K = 10  # number of candidate bars to display
 BAR = "█"
 BAR_W = 30
 DEFAULT_PROMPT = "I like to think"
@@ -38,6 +38,7 @@ def apply_sampling_filters(logits, temperature, top_k):
         Divisor for logits. < 1.0 sharpens the distribution; > 1.0 flattens it.
     top_k : int
         If > 0, keep only the top-k highest logits; the rest are set to -inf.
+        (changes the denominator used in the softmax calculation)
 
     Returns
     -------
