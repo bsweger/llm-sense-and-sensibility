@@ -18,7 +18,7 @@ hf_logging.set_verbosity_error()
 TOP_K = 10  # number of candidate bars to display
 BAR = "█"
 BAR_W = 30
-DEFAULT_PROMPT = "I like to think"
+DEFAULT_PROMPT = "I was tired of pretending"
 
 # Display label -> Hugging Face model id. First entry is the default.
 MODELS = {
@@ -167,7 +167,7 @@ def _candidate_rows_html(candidates, scale_max_pct, header, label_w, bar_w):
         color = HUD_ACCENT if i == 0 else BODY_TEXT
         rows.append(
             f"<span style='font-family:monospace;white-space:pre;font-weight:{weight};color:{color};font-size:15px'>"
-            f"{i + 1}. {label:<{label_w}} {bar:<{bar_w}} {pct:>5.1f}%</span>"
+            f"{i + 1:>2}. {label:<{label_w}} {bar:<{bar_w}} {pct:>5.1f}%</span>"
         )
     return f"**{header}:**<br>" + "<br>".join(rows)
 
