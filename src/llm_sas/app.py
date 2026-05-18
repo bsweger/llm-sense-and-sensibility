@@ -1,13 +1,11 @@
 """Entry point for Streamlit handoff."""
 
 import sys
-from pathlib import Path
 
 import structlog
 from streamlit.web import cli as stcli
 
 from llm_sas import PROJECT_DIR
-
 
 logger = structlog.get_logger()
 
