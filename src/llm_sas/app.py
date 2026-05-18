@@ -11,7 +11,7 @@ logger = structlog.get_logger()
 
 
 def main():
-    app_path = PROJECT_DIR / "demos.py"
+    app_path = PROJECT_DIR / "demos" / "demos.py"
     sys.argv = ["streamlit", "run", str(app_path)]
     sys.exit(stcli.main())
 

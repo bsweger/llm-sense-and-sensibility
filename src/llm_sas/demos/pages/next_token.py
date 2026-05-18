@@ -8,33 +8,14 @@ controls for temperature and top-k filtering.
 
 import streamlit as st
 import torch
-from transformers import AutoModelForCausalLM, AutoTokenizer
-from transformers import logging as hf_logging
 
+from llm_sas.demos.models import load_model, render_model_selector
 from llm_sas.theme import BODY_TEXT, HIGHLIGHT_BG, HUD_ACCENT
-
-hf_logging.set_verbosity_error()
 
 TOP_K = 10  # number of candidate bars to display
 BAR = "█"
 BAR_W = 30
 DEFAULT_PROMPT = "I was tired of pretending"
-
-# Display label -> Hugging Face model id. First entry is the default.
-MODELS = {
-    "GPT-2 (124M)": "gpt2",
-    "Pythia-160m": "EleutherAI/pythia-160m",
-}
-DEFAULT_MODEL_LABEL = next(iter(MODELS))
-
-
-@st.cache_resource(show_spinner=True)
-def load_model(model_id: str):
-    """Load a causal LM and tokenizer by Hugging Face id. Cached per model id."""
-    tokenizer = AutoTokenizer.from_pretrained(model_id)
-    model = AutoModelForCausalLM.from_pretrained(model_id)
-    model.eval()
-    return tokenizer, model
 
 
 def apply_sampling_filters(logits, temperature, top_k):
@@ -207,23 +188,6 @@ def render_candidates(natural, filtered, sampling_on, temperature, top_k):
             st.markdown(f"**{filter_header}:** *(no candidates)*")
 
 
-def render_model_selector() -> str:
-    """Render the sidebar model picker and return the chosen Hugging Face model id."""
-    with st.sidebar:
-        st.header("Model")
-        label = st.selectbox(
-            "Hugging Face model",
-            list(MODELS.keys()),
-            key="selected_model_label",
-            help=(
-                "Different models were trained on different data and produce different "
-                "distributions for the same prompt. Switching models resets the running "
-                "sentence because tokenizers differ between model families."
-            ),
-        )
-    return MODELS[label]
-
-
 def render_sampling_controls():
     """Render sidebar widgets and return (sampling_on, temperature, top_k)."""
     with st.sidebar:
@@ -320,7 +284,14 @@ st.markdown(
 )
 
 init_state()
-model_id = render_model_selector()
+model_id = render_model_selector(
+    key="next_token_model",
+    help=(
+        "Different models were trained on different data and produce different "
+        "distributions for the same prompt. Switching models resets the running "
+        "sentence because tokenizers differ between model families."
+    ),
+)
 with st.spinner(f"Loading {model_id}…"):
     tokenizer, model = load_model(model_id)
 

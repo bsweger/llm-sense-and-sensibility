@@ -10,18 +10,10 @@ from textwrap import dedent
 
 import polars as pl
 import streamlit as st
-from transformers import AutoTokenizer
-from transformers import logging as hf_logging
 
+from llm_sas.demos.models import load_tokenizer, render_model_selector
 from llm_sas.theme import BODY_TEXT, TOKEN_COLORS
 
-hf_logging.set_verbosity_error()
-
-# Display label -> Hugging Face model id. First entry is the default.
-MODELS = {
-    "GPT-2 (124M)": "gpt2",
-    "Pythia-160m": "EleutherAI/pythia-160m",
-}
 DEFAULT_PROMPT = dedent("""\
     "I don't want to be human."
 
@@ -29,12 +21,6 @@ DEFAULT_PROMPT = dedent("""\
 
     "That's the dumbest thing I've ever heard."
     """)
-
-
-@st.cache_resource(show_spinner=True)
-def load_tokenizer(model_id: str):
-    """Load just the tokenizer for the given model id. Cached per model."""
-    return AutoTokenizer.from_pretrained(model_id)
 
 
 def tokenize(tokenizer, prompt: str) -> list[tuple[int, int, str, str]]:
@@ -83,23 +69,6 @@ def format_inline_html(rows: list[tuple[int, int, str, str]], colors: list[str] 
     return "<div style='line-height:1.8'>" + "".join(pills) + "</div>"
 
 
-def render_model_selector() -> str:
-    """Render the sidebar model picker and return the chosen Hugging Face model id."""
-    with st.sidebar:
-        st.header("Model")
-        label = st.selectbox(
-            "Hugging Face model",
-            list(MODELS.keys()),
-            key="tokenizer_selected_model_label",
-            help=(
-                "Each model has its own tokenizer. The same prompt can result in "
-                "a different number of tokens and different token boundaries "
-                "depending on which model you pick."
-            ),
-        )
-    return MODELS[label]
-
-
 # ---------------------------------------------------------------------------
 # Page body
 # ---------------------------------------------------------------------------
@@ -115,7 +84,13 @@ st.markdown(
     """
 )
 
-model_id = render_model_selector()
+model_id = render_model_selector(
+    key="tokenizer_model",
+    help=(
+        "Each model has its own tokenizer. The same prompt can result in a different "
+        "number of tokens and different token boundaries depending on which model you pick."
+    ),
+)
 with st.spinner(f"Loading {model_id} tokenizer…"):
     tokenizer = load_tokenizer(model_id)
 
