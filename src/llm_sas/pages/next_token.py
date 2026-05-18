@@ -148,26 +148,53 @@ def render_sentence(tokenizer):
     )
 
 
-def render_candidates(candidates):
-    """Render the top-K candidates as bars."""
-    if not candidates:
-        st.info("Enter a prompt above to see candidates.")
-        return
-
-    max_pct = candidates[0][2]
+def _candidate_rows_html(candidates, scale_max_pct, header, label_w, bar_w):
+    """Build the HTML for one column of candidate bars. Pure — no Streamlit calls."""
     rows = []
     for i, (label, _tid, pct) in enumerate(candidates):
-        bar = BAR * round(pct / max_pct * BAR_W)
+        bar = BAR * round(pct / scale_max_pct * bar_w) if scale_max_pct > 0 else ""
         weight = "bold" if i == 0 else "normal"
         color = "#15803d" if i == 0 else "#1f2937"
         rows.append(
             f"<span style='font-family:monospace;white-space:pre;font-weight:{weight};color:{color};font-size:15px'>"
-            f"{i + 1}. {label:<14} {bar:<{BAR_W}} {pct:>5.1f}%</span>"
+            f"{i + 1}. {label:<{label_w}} {bar:<{bar_w}} {pct:>5.1f}%</span>"
         )
-    st.markdown(
-        "**Top candidates for next token:**<br>" + "<br>".join(rows),
-        unsafe_allow_html=True,
-    )
+    return f"**{header}:**<br>" + "<br>".join(rows)
+
+
+def render_candidates(natural, filtered, sampling_on, temperature, top_k):
+    """Render the candidate bars. Single column in greedy mode, side-by-side when sampling."""
+    if not natural:
+        st.info("Enter a prompt above to see candidates.")
+        return
+
+    if not sampling_on:
+        st.markdown(
+            _candidate_rows_html(natural, natural[0][2], "Top candidates for next token", 14, BAR_W),
+            unsafe_allow_html=True,
+        )
+        return
+
+    # Each column normalized to its own top, so the Natural column stays visually
+    # stable as the sliders move (it's a fixed reference). Compare absolute
+    # magnitudes by reading the printed percentages; compare shapes by eye.
+    label_w, bar_w = 12, 15  # narrower bars so two columns fit in the centered layout
+
+    col_natural, col_filtered = st.columns(2)
+    with col_natural:
+        st.markdown(
+            _candidate_rows_html(natural, natural[0][2], "Natural (T=1.0)", label_w, bar_w),
+            unsafe_allow_html=True,
+        )
+    with col_filtered:
+        filter_header = f"After filters (T={temperature}, top-k={top_k})"
+        if filtered:
+            st.markdown(
+                _candidate_rows_html(filtered, filtered[0][2], filter_header, label_w, bar_w),
+                unsafe_allow_html=True,
+            )
+        else:
+            st.markdown(f"**{filter_header}:** *(no candidates)*")
 
 
 def render_sampling_controls():
@@ -287,19 +314,23 @@ if prompt_text != st.session_state.prompt_value:
 st.markdown("---")
 
 render_sentence(tokenizer)
-# In greedy mode, show the natural (unfiltered) distribution; in sampling mode,
-# show what the sampler will actually draw from so the audience can watch the
-# bars change as temperature/top-k change.
-candidates = get_candidates(
-    st.session_state.token_ids,
-    tokenizer,
-    model,
-    temperature=temperature if sampling_on else 1.0,
-    top_k=top_k if sampling_on else 0,
-)
+# Always show the model's natural (T=1, unfiltered) distribution as the reference.
+# In sampling mode, also show the post-filter distribution side-by-side so the
+# audience can see what the sampler will actually draw from.
+natural_candidates = get_candidates(st.session_state.token_ids, tokenizer, model)
+if sampling_on:
+    filtered_candidates = get_candidates(
+        st.session_state.token_ids, tokenizer, model,
+        temperature=temperature, top_k=top_k,
+    )
+else:
+    filtered_candidates = natural_candidates
 
 st.markdown("")
-render_candidates(candidates)
+render_candidates(natural_candidates, filtered_candidates, sampling_on, temperature, top_k)
 
+# The primary "Sample"/"Pick most likely" button operates on the filtered distribution
+# in sampling mode and the natural one in greedy mode.
+action_candidates = filtered_candidates if sampling_on else natural_candidates
 st.markdown("")
-render_action_buttons(candidates, tokenizer, sampling_on)
+render_action_buttons(action_candidates, tokenizer, sampling_on)
