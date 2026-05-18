@@ -6,8 +6,8 @@ st.set_page_config(
 )
 
 pages = [
-    st.Page("pages/0_home.py", title="Home", icon="🏠", default=True),
-    st.Page("pages/1_next_token.py", title="Part 1 — Next-token prediction", icon="🎯"),
+    st.Page("pages/home.py", title="Home", icon="🏠", default=True),
+    st.Page("pages/next_token.py", title="Demo 1 — Next-token prediction", icon="🎯"),
 ]
 
 pg = st.navigation(pages)
