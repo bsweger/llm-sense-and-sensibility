@@ -13,6 +13,7 @@ This is Python application with two main components:
 
 ## Code Style
 
+- Don't number the Streamlit demos in comments or in any naming conventions
 - Python doctrings should follow NumPy docstring format
 - Python functions parameters and outputs should have type hints
 - Ruff enforces double quotes and 120-character line length in Python files

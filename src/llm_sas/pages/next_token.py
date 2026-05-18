@@ -1,13 +1,14 @@
 """
-Demo 1 — Next-token prediction.
+Next-token prediction demo.
 
 Interactive demo: step through a sentence one token at a time. The sidebar
 toggles between greedy decoding (always pick argmax) and sampling, with
 controls for temperature and top-k filtering.
 """
+
 import streamlit as st
 import torch
-from transformers import GPT2LMHeadModel, GPT2Tokenizer
+from transformers import AutoModelForCausalLM, AutoTokenizer
 from transformers import logging as hf_logging
 
 hf_logging.set_verbosity_error()
@@ -17,12 +18,19 @@ BAR = "█"
 BAR_W = 30
 DEFAULT_PROMPT = "I like to think"
 
+# Display label -> Hugging Face model id. First entry is the default.
+MODELS = {
+    "GPT-2 (124M)": "gpt2",
+    "Pythia-160m": "EleutherAI/pythia-160m",
+}
+DEFAULT_MODEL_LABEL = next(iter(MODELS))
 
-@st.cache_resource(show_spinner="Loading GPT-2 (one-time, ~500MB)…")
-def load_model():
-    """Load GPT-2 model and tokenizer. Cached across reruns and sessions."""
-    tokenizer = GPT2Tokenizer.from_pretrained("gpt2")
-    model = GPT2LMHeadModel.from_pretrained("gpt2")
+
+@st.cache_resource(show_spinner=True)
+def load_model(model_id: str):
+    """Load a causal LM and tokenizer by Hugging Face id. Cached per model id."""
+    tokenizer = AutoTokenizer.from_pretrained(model_id)
+    model = AutoModelForCausalLM.from_pretrained(model_id)
     model.eval()
     return tokenizer, model
 
@@ -115,7 +123,7 @@ def sample_token_id(token_ids, model, temperature, top_k):
 
 def sample_next_token():
     """Streamlit on_click shim: read state, call sample_token_id, append sampled token."""
-    _, model = load_model()
+    _, model = load_model(st.session_state.active_model_id)
     token_ids = st.session_state.token_ids
     if not token_ids:
         return
@@ -137,14 +145,11 @@ def render_sentence(tokenizer):
     text = tokenizer.decode(token_ids)
     toks = text.split()
     hl = " ".join(
-        f"<mark style='background:#dbeafe;padding:2px 6px;border-radius:4px'>{t}</mark>"
-        if i == len(toks) - 1
-        else t
+        f"<mark style='background:#dbeafe;padding:2px 6px;border-radius:4px'>{t}</mark>" if i == len(toks) - 1 else t
         for i, t in enumerate(toks)
     )
     st.markdown(
-        f"**Sentence so far:**<br>"
-        f"<span style='font-family:monospace;font-size:18px;line-height:2.2'>{hl}</span>",
+        f"**Sentence so far:**<br><span style='font-family:monospace;font-size:18px;line-height:2.2'>{hl}</span>",
         unsafe_allow_html=True,
     )
 
@@ -196,6 +201,23 @@ def render_candidates(natural, filtered, sampling_on, temperature, top_k):
             )
         else:
             st.markdown(f"**{filter_header}:** *(no candidates)*")
+
+
+def render_model_selector() -> str:
+    """Render the sidebar model picker and return the chosen Hugging Face model id."""
+    with st.sidebar:
+        st.header("Model")
+        label = st.selectbox(
+            "Hugging Face model",
+            list(MODELS.keys()),
+            key="selected_model_label",
+            help=(
+                "Different models were trained on different data and produce different "
+                "distributions for the same prompt. Switching models resets the running "
+                "sentence because tokenizers differ between model families."
+            ),
+        )
+    return MODELS[label]
 
 
 def render_sampling_controls():
@@ -284,7 +306,7 @@ def render_action_buttons(candidates, tokenizer, sampling_on):
 # ---------------------------------------------------------------------------
 # Page body
 # ---------------------------------------------------------------------------
-st.title("Demo 1 — Text as Prediction")
+st.title("Text as Prediction")
 st.markdown(
     """
     LLMs are next-token predictors. At each step the model produces a probability
@@ -294,11 +316,15 @@ st.markdown(
 )
 
 init_state()
-tokenizer, model = load_model()
+model_id = render_model_selector()
+with st.spinner(f"Loading {model_id}…"):
+    tokenizer, model = load_model(model_id)
 
-# Seed token_ids from the default prompt on the very first run.
-if st.session_state.token_ids is None:
-    st.session_state.token_ids = tokenizer.encode(DEFAULT_PROMPT)
+# Seed token_ids on first run, and re-tokenize whenever the user switches models
+# (token ids are not portable across tokenizers).
+if st.session_state.token_ids is None or st.session_state.get("active_model_id") != model_id:
+    st.session_state.active_model_id = model_id
+    st.session_state.token_ids = tokenizer.encode(st.session_state.prompt_value or DEFAULT_PROMPT)
 
 sampling_on, temperature, top_k = render_sampling_controls()
 
@@ -321,8 +347,11 @@ render_sentence(tokenizer)
 natural_candidates = get_candidates(st.session_state.token_ids, tokenizer, model)
 if sampling_on:
     filtered_candidates = get_candidates(
-        st.session_state.token_ids, tokenizer, model,
-        temperature=temperature, top_k=top_k,
+        st.session_state.token_ids,
+        tokenizer,
+        model,
+        temperature=temperature,
+        top_k=top_k,
     )
 else:
     filtered_candidates = natural_candidates
