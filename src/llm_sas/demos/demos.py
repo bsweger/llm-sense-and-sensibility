@@ -8,6 +8,7 @@ st.set_page_config(
 pages = [
     st.Page("pages/home.py", title="Home", icon="🏠", default=True),
     st.Page("pages/tokenizer.py", title="Tokenization", icon="🔡"),
+    st.Page("pages/attention.py", title="Attention", icon="🔗"),
     st.Page("pages/next_token.py", title="Next-token prediction", icon="🎯"),
 ]
 

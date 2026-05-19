@@ -19,6 +19,7 @@ dependencies = [
     "streamlit>=1.57.0",
     "marimo>=0.23.6",
     "polars>=1.40.1",
+    "plotly>=6.7.0",
 ]
 
 [dependency-groups]

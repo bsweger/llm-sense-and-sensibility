@@ -9,6 +9,7 @@ a new model is a one-line change to ``MODELS``.
 from dataclasses import dataclass
 
 import streamlit as st
+import torch
 from transformers import AutoModelForCausalLM, AutoTokenizer
 from transformers import logging as hf_logging
 
@@ -62,11 +63,53 @@ def load_tokenizer(spec: ModelSpec):
 
 @st.cache_resource(show_spinner=True)
 def load_model(spec: ModelSpec):
-    """Load a causal LM and its tokenizer for the given spec. Cached per spec."""
+    """Load a causal LM and its tokenizer for the given spec. Cached per spec.
+
+    The model is loaded with ``attn_implementation="eager"`` so that
+    ``output_attentions=True`` returns the per-head attention probability tensors
+    used by the attention-visualization demo. The fused SDPA / flash kernels
+    that transformers picks by default skip producing those tensors. Eager is
+    a touch slower but the perf hit on these small models is negligible.
+    """
     tokenizer = AutoTokenizer.from_pretrained(spec.effective_tokenizer_id)
-    model = AutoModelForCausalLM.from_pretrained(spec.model_id)
+    model = AutoModelForCausalLM.from_pretrained(spec.model_id, attn_implementation="eager")
     model.eval()
     return tokenizer, model
+
+
+@st.cache_data(show_spinner=False)
+def get_attentions(text: str, spec: ModelSpec) -> tuple[list[str], torch.Tensor]:
+    """Run a forward pass and return per-layer self-attention weights.
+
+    Parameters
+    ----------
+    text : str
+        Input prompt. Tokenized with the spec's tokenizer.
+    spec : ModelSpec
+        Model to use. Loaded (and cached) via :func:`load_model`.
+
+    Returns
+    -------
+    tokens : list of str
+        Decoded per-token strings, in order. ``len(tokens) == seq_len``.
+    attn : torch.Tensor
+        Stacked attention weights, shape ``(num_layers, num_heads, seq, seq)``.
+        ``attn[l, h, q, k]`` is the weight from query token ``q`` to key token
+        ``k`` in layer ``l``, head ``h``. Rows sum to 1.
+
+    Notes
+    -----
+    Cached on ``(text, spec)`` so editing the prompt re-runs the model but
+    moving layer/head sliders is free.
+    """
+    tokenizer, model = load_model(spec)
+    input_ids = tokenizer.encode(text, return_tensors="pt")
+    with torch.no_grad():
+        outputs = model(input_ids, output_attentions=True)
+    # outputs.attentions is a tuple of length num_layers, each (1, heads, seq, seq).
+    attn = torch.stack([a.squeeze(0) for a in outputs.attentions])  # (L, H, S, S)
+    tokens = [tokenizer.decode([tid]) for tid in input_ids[0].tolist()]
+    return tokens, attn
 
 
 def render_model_selector(*, key: str, help: str | None = None) -> ModelSpec:
