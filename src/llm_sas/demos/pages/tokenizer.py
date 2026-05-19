@@ -80,7 +80,7 @@ st.markdown(
     are usually a single token, but rare words, punctuation, and leading
     whitespace are often pieces of their own.
 
-    Edit the prompt below to see how it gets sliced up.
+    Edit the prompt below to see how it's encoded into tokens.
     """
 )
 
@@ -99,7 +99,28 @@ prompt = st.text_area("Prompt", value=DEFAULT_PROMPT, key="tokenizer_prompt", he
 rows = tokenize(tokenizer, prompt)
 
 st.markdown("---")
+st.markdown("#### Tokenized prompt")
+st.markdown(
+    """
+    Large language models break text into tokens, which are
+    represented by integers.
+    """
+)
+
+if not rows:
+    st.info("Type something in the prompt above to see its token ids.")
+else:
+    token_ids = [r[1] for r in rows]
+    st.code(str(token_ids), language=None, wrap_lines=True)
+
+st.markdown("---")
 st.markdown("#### Tokens")
+st.markdown(
+    """
+    Each token integer can be mapped back ("decoded") to its corresponding string
+    representation:
+    """
+)
 
 if not rows:
     st.info("Type something in the prompt above to see it tokenized.")

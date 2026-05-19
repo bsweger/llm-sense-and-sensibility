@@ -74,9 +74,9 @@ def _(mo):
     mo.md(r"""
     # Jargon: tokens
 
-    > A word, word part, or character that a language model uses to interpret and generate text. Tokens can also include special characters and symbols, or even individual bytes that are not by themselves valid characters.
-
-    Think of tokens as lego pieces that represent the most atomic units of languge.
+    - lego pieces that represent the most atomic units of languge
+    - represented by integers ("token ids") that serve as a lookup to the model's vocabulary
+    - criteria for tokenizing prompts differs from model to model
     """)
     return
 
