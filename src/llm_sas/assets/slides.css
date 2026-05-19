@@ -1,0 +1,196 @@
+/* Slides theme.
+ *
+ * Fonts (Google Fonts):
+ *   Chivo        — display / headings / sans
+ *   Noto Serif   — body
+ *   Chivo Mono   — eyebrow text, code
+ */
+
+@import url("https://fonts.googleapis.com/css2?family=Chivo:wght@400;600;700;800&family=Chivo+Mono:wght@400;600&family=Noto+Serif:ital,wght@0,400;0,600;0,700;1,400&display=swap");
+
+:root {
+  --color-teal: #0b4f4a;
+  --color-teal-dark: #083834;
+  --color-ink: #1a1a1a;
+  --color-muted: #6b7370;
+  --color-rule: #d6dad8;
+  --color-bg: #ffffff;
+
+  --font-display: "Chivo", "Helvetica Neue", Arial, sans-serif;
+  --font-body: "Noto Serif", Georgia, "Times New Roman", serif;
+  --font-sans: "Chivo", "Helvetica Neue", Arial, sans-serif;
+  --font-mono: "Chivo Mono", "JetBrains Mono", Menlo, Consolas, monospace;
+}
+
+.markdown {
+  font-family: var(--font-body);
+  color: var(--color-ink);
+  font-size: 1.2rem;
+  line-height: 1.55;
+}
+
+/* Hero / document title */
+.markdown h1 {
+  font-family: var(--font-display);
+  font-weight: 800;
+  color: var(--color-teal-dark);
+  font-size: 3.2rem;
+  line-height: 1.15;
+  letter-spacing: -0.01em;
+  margin: 0.4em 0 0.5em;
+}
+
+/* Section heading */
+.markdown h2 {
+  font-family: var(--font-display);
+  font-weight: 700;
+  color: var(--color-teal);
+  font-size: 2.25rem;
+  line-height: 1.2;
+  margin: 1.4em 0 0.5em;
+}
+
+/* Subsection heading */
+.markdown h3 {
+  font-family: var(--font-display);
+  font-weight: 700;
+  color: var(--color-teal);
+  font-size: 1.65rem;
+  line-height: 1.25;
+  margin: 1.2em 0 0.4em;
+}
+
+/* Eyebrow / smallest heading — uppercase mono */
+.markdown h4,
+.markdown h5,
+.markdown h6 {
+  font-family: var(--font-mono);
+  font-weight: 600;
+  color: var(--color-teal);
+  font-size: 1rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin: 1.2em 0 0.4em;
+}
+
+.markdown p {
+  margin: 0.5em 0 0.9em;
+}
+
+.markdown a,
+.markdown a:visited {
+  color: var(--color-teal);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.markdown a:hover {
+  color: var(--color-teal-dark);
+}
+
+.markdown strong {
+  font-weight: 700;
+  color: var(--color-teal-dark);
+}
+
+.markdown em {
+  font-style: italic;
+}
+
+.markdown ul,
+.markdown ol {
+  padding-left: 1.4em;
+  margin: 0.4em 0 1em;
+}
+
+.markdown li {
+  margin: 0.35em 0;
+}
+
+.markdown ul li::marker {
+  color: var(--color-teal);
+}
+
+.markdown ol li::marker {
+  color: var(--color-teal);
+  font-weight: 600;
+}
+
+/* Inline code */
+.markdown code {
+  font-family: var(--font-mono);
+  font-size: 0.9em;
+  background: #f1f4f3;
+  color: var(--color-teal-dark);
+  padding: 0.1em 0.35em;
+  border-radius: 3px;
+}
+
+/* Fenced code blocks */
+.markdown pre {
+  font-family: var(--font-mono);
+  background: #f5f7f6;
+  color: var(--color-ink);
+  border-left: 3px solid var(--color-teal);
+  padding: 0.9em 1.1em;
+  border-radius: 4px;
+  overflow-x: auto;
+  font-size: 1.05rem;
+  line-height: 1.5;
+}
+
+.markdown pre code {
+  background: transparent;
+  color: inherit;
+  padding: 0;
+}
+
+.markdown blockquote {
+  border-left: 3px solid var(--color-teal);
+  margin: 1em 0;
+  padding: 0.2em 0 0.2em 1em;
+  color: var(--color-muted);
+  font-style: italic;
+}
+
+.markdown hr {
+  border: 0;
+  border-top: 1px solid var(--color-rule);
+  margin: 1.6em 0;
+}
+
+/* Tables — dark teal header, hairline row separators */
+.markdown table {
+  border-collapse: collapse;
+  width: 100%;
+  margin: 1em 0;
+  font-size: 1.1rem;
+  font-family: var(--font-sans);
+}
+
+.markdown th {
+  background: var(--color-teal-dark);
+  color: #ffffff;
+  font-weight: 600;
+  text-align: left;
+  padding: 0.7em 1em;
+}
+
+.markdown td {
+  padding: 0.7em 1em;
+  border-bottom: 1px solid var(--color-rule);
+}
+
+/* Captions: <small>caption text</small> in markdown */
+.markdown small {
+  display: inline-block;
+  font-family: var(--font-sans);
+  font-size: 1rem;
+  color: var(--color-muted);
+}
+
+.markdown img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 2px;
+}
