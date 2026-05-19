@@ -119,6 +119,46 @@ def sample_next_token():
     st.session_state.token_ids = token_ids + [sampled]
 
 
+def greedy_token_id(token_ids, model):
+    """Return the argmax of the natural (unfiltered) next-token distribution. Pure."""
+    input_ids = torch.tensor([token_ids])
+    with torch.no_grad():
+        logits = model(input_ids).logits[0, -1, :]
+    return int(torch.argmax(logits).item())
+
+
+def generate_token_ids(token_ids, model, sampling_on, temperature, top_k, n_new_tokens):
+    """Run ``n_new_tokens`` decoding steps and return the extended token list.
+
+    One step is exactly what the per-click buttons do today — a forward pass
+    plus a decoding decision (argmax for greedy, multinomial draw from the
+    filtered distribution for sampling). Pure — easy to unit-test.
+    """
+    ids = list(token_ids)
+    for _ in range(n_new_tokens):
+        if sampling_on:
+            ids.append(sample_token_id(ids, model, temperature, top_k))
+        else:
+            ids.append(greedy_token_id(ids, model))
+    return ids
+
+
+def generate_next_tokens():
+    """Streamlit on_click shim: run ``max_tokens`` decoding steps in a row."""
+    _, model = load_model(st.session_state.active_model)
+    token_ids = st.session_state.token_ids
+    if not token_ids:
+        return
+    st.session_state.token_ids = generate_token_ids(
+        token_ids,
+        model,
+        sampling_on=(st.session_state.sampling_mode == "Sampling"),
+        temperature=st.session_state.temperature,
+        top_k=st.session_state.top_k,
+        n_new_tokens=st.session_state.max_tokens,
+    )
+
+
 def render_sentence(tokenizer):
     """Render the running sentence with the most recent token highlighted."""
     token_ids = st.session_state.token_ids or []
@@ -188,8 +228,8 @@ def render_candidates(natural, filtered, sampling_on, temperature, top_k):
             st.markdown(f"**{filter_header}:** *(no candidates)*")
 
 
-def render_sampling_controls():
-    """Render sidebar widgets and return (sampling_on, temperature, top_k)."""
+def render_generation_controls():
+    """Render sidebar widgets and return (sampling_on, temperature, top_k, max_tokens)."""
     with st.sidebar:
         st.header("Next token controls")
         mode = st.radio(
@@ -236,15 +276,36 @@ def render_sampling_controls():
                 "the vocabulary is eligible)."
             ),
         )
+        max_tokens = st.slider(
+            "Tokens to generate per click",
+            min_value=1,
+            max_value=20,
+            value=1,
+            step=1,
+            key="max_tokens",
+            help=(
+                "How many tokens to produce in one click. At 1 (default) you advance one "
+                "token at a time. At N>1 the same decoding strategy runs in a loop N times — "
+                "every step makes its own forward pass and its own decoding decision."
+            ),
+        )
 
-    return sampling_on, temperature, top_k
+    return sampling_on, temperature, top_k, max_tokens
 
 
-def render_action_buttons(candidates, tokenizer, sampling_on):
-    """Primary action (sample or pick-most-likely) and reset button."""
+def render_action_buttons(candidates, tokenizer, sampling_on, max_tokens):
+    """Primary action (sample, pick-most-likely, or generate N) and reset button."""
     col_action, col_reset = st.columns([1, 1])
     with col_action:
-        if sampling_on:
+        if max_tokens > 1:
+            st.button(
+                f"Generate next {max_tokens} tokens",
+                on_click=generate_next_tokens,
+                disabled=not candidates,
+                type="primary",
+                use_container_width=True,
+            )
+        elif sampling_on:
             st.button(
                 "Sample next token",
                 on_click=sample_next_token,
@@ -301,7 +362,7 @@ if st.session_state.token_ids is None or st.session_state.get("active_model") !=
     st.session_state.active_model = spec
     st.session_state.token_ids = tokenizer.encode(st.session_state.prompt_value or DEFAULT_PROMPT)
 
-sampling_on, temperature, top_k = render_sampling_controls()
+sampling_on, temperature, top_k, max_tokens = render_generation_controls()
 
 # Prompt input — pressing Enter or clicking outside commits a new starting prompt.
 prompt_text = st.text_input(
@@ -338,4 +399,4 @@ render_candidates(natural_candidates, filtered_candidates, sampling_on, temperat
 # in sampling mode and the natural one in greedy mode.
 action_candidates = filtered_candidates if sampling_on else natural_candidates
 st.markdown("")
-render_action_buttons(action_candidates, tokenizer, sampling_on)
+render_action_buttons(action_candidates, tokenizer, sampling_on, max_tokens)
