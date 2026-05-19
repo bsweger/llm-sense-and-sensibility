@@ -8,7 +8,6 @@ differently — switch the model in the sidebar to compare.
 
 from textwrap import dedent
 
-import polars as pl
 import streamlit as st
 
 from llm_sas.demos.models import load_tokenizer, render_model_selector
@@ -96,37 +95,41 @@ with st.spinner(f"Loading {spec.model_id} tokenizer…"):
 
 prompt = st.text_area("Prompt", value=DEFAULT_PROMPT, key="tokenizer_prompt", height=200)
 
-rows = tokenize(tokenizer, prompt)
+if st.button("Tokenize prompt", type="primary"):
+    st.session_state["tokenizer_rows"] = tokenize(tokenizer, prompt)
+    st.session_state["tokenizer_prompt_used"] = prompt
 
-st.markdown("---")
-st.markdown("#### Tokenized prompt")
-st.markdown(
-    """
-    Large language models break text into tokens, which are
-    represented by integers.
-    """
-)
+rows = st.session_state.get("tokenizer_rows")
 
-if not rows:
-    st.info("Type something in the prompt above to see its token ids.")
+if rows is None:
+    st.info("Click **Tokenize prompt** to see how this prompt is encoded into tokens.")
+elif not rows:
+    st.info("Type something in the prompt above and click **Tokenize prompt**.")
 else:
+    prompt_used = st.session_state.get("tokenizer_prompt_used", "")
+
+    st.markdown("---")
+    st.markdown("#### Tokenized prompt")
+    st.markdown(
+        """
+        Large language models break text into tokens, which are
+        represented by integers.
+        """
+    )
     token_ids = [r[1] for r in rows]
     st.code(str(token_ids), language=None, wrap_lines=True)
 
-st.markdown("---")
-st.markdown("#### Tokens")
-st.markdown(
-    """
-    Each token integer can be mapped back ("decoded") to its corresponding string
-    representation:
-    """
-)
+    st.markdown("---")
+    st.markdown("#### Decoded tokens")
+    st.markdown(
+        """
+        Each token integer can be mapped back ("decoded") to its corresponding string
+        representation:
+        """
+    )
 
-if not rows:
-    st.info("Type something in the prompt above to see it tokenized.")
-else:
     n_tokens = len(rows)
-    n_words = len(prompt.split())
+    n_words = len(prompt_used.split())
 
     st.markdown(
         f"""
@@ -139,15 +142,3 @@ else:
     )
 
     st.markdown(format_inline_html(rows), unsafe_allow_html=True)
-
-    st.markdown("---")
-
-    st.markdown("#### Token detail")
-    df = pl.DataFrame(
-        {
-            "Token Position": [r[0] + 1 for r in rows],
-            "Token ID": [r[1] for r in rows],
-            "Decoded": [_visible(r[3]) for r in rows],
-        }
-    )
-    st.dataframe(df, width="stretch", hide_index=True, height="content")
