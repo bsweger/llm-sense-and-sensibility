@@ -14,9 +14,9 @@ st.markdown(
     differently by different tokenizers — switch models in the sidebar to compare.
 
     ### Attention
-    Inspect how a single transformer head routes information across a sentence.
-    Includes a Winograd minimal-pair view where flipping one word visibly
-    shifts the model's attention to a different referent.
+    Inspect how a transformer layer routes information across a sentence.
+    Move the layer slider to see how patterns evolve from local/positional
+    (early layers) to longer-range and more semantic-looking (later layers).
 
     ### Next-token prediction
     Step through a sentence one token at a time. The model produces a probability

@@ -15,11 +15,12 @@ project uses [Semantic Versioning](https://semver.org/).
   token ids, with an inline colored-pill view and a detail table listing each
   id alongside its raw BPE piece and decoded text. Shares the same model
   selector so users can compare tokenizers on the same input.
-- Attention demo (`pages/attention.py`): interactive per-head heatmap with
-  layer/head sliders sized from the selected model's config, plus a Winograd
-  minimal-pair view that auto-picks the head whose attention pattern flips
-  most cleanly between the two sentences. Uses GPT-2's `output_attentions`
-  via a new `get_attentions` helper on the shared models module.
+- Attention demo (`pages/attention.py`): interactive token-to-token heatmap
+  with a single layer slider sized from the selected model's config. Each
+  cell shows attention averaged across the layer's heads — heads are hidden
+  from the audience since this is a high-level talk. Uses a new
+  `get_attentions` helper on the shared models module that pulls
+  per-layer self-attention via `output_attentions=True`.
 - `plotly` added as a runtime dependency for the attention visualizations.
 
 ### Changed

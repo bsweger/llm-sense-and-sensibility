@@ -1,30 +1,23 @@
 """
 Attention mechanism demo.
 
-Two sections, both driven by per-head self-attention weights pulled from the
-selected model's forward pass:
+Pick a sentence, a focus word, and a layer. The page renders the sentence as
+a horizontal row of tokens with arcs from the focus word back to every earlier
+token, with arc opacity proportional to the attention weight at the chosen
+layer (averaged across heads). The arc form was chosen over a heatmap because
+the heatmap's row/column distinction and empty upper-triangle were intimidating
+to non-technical viewers.
 
-1. **Heatmap** — pick a layer and head and inspect the full token-to-token
-   attention matrix. Early layers tend to show positional/syntactic patterns
-   (strong diagonals, attention to neighbors); later layers tend to show more
-   semantically driven patterns.
-
-2. **Winograd minimal pair** — two sentences differing in one word that flips
-   the most likely referent of a pronoun. We auto-pick the (layer, head) that
-   shows the strongest sign-flip on the candidate referents across the pair,
-   then visualize that head side-by-side. The audience sees attention shift
-   to track meaning when grammar stays constant.
-
-Both sections work with every model in :mod:`llm_sas.demos.models`; layer/head
-counts are read from ``model.config`` so the controls auto-fit each model.
+The page works with every model in :mod:`llm_sas.demos.models`; layer counts
+are read from ``model.config`` so the slider auto-fits each model. The head
+dimension is hidden from the audience — heads are an internal detail in this
+high-level talk.
 """
 
 import plotly.graph_objects as go
 import streamlit as st
-import torch
 
 from llm_sas.demos.models import ModelSpec, get_attentions, load_model, render_model_selector
-from llm_sas.theme import HIGHLIGHT_BG, HUD_ACCENT
 
 PRESETS: dict[str, str] = {
     "Pronoun reference": "The trophy didn't fit in the suitcase because it was too big.",
@@ -33,161 +26,96 @@ PRESETS: dict[str, str] = {
     "Simple narrative": "She opened the door and walked into the room.",
 }
 
-WINOGRAD_PAIRS: dict[str, dict[str, str]] = {
-    "Trophy / suitcase": {
-        "a": "The trophy didn't fit in the suitcase because it was too big.",
-        "b": "The trophy didn't fit in the suitcase because it was too small.",
-        "ref_a": "trophy",
-        "ref_b": "suitcase",
-        "query_a": "big",
-        "query_b": "small",
-    },
-    "Truck / city": {
-        "a": "The truck couldn't drive through the city because it was too big.",
-        "b": "The truck couldn't drive through the city because it was too small.",
-        "ref_a": "truck",
-        "ref_b": "city",
-        "query_a": "big",
-        "query_b": "small",
-    },
-    "Hammer / nail": {
-        "a": "The hammer broke the nail because it was strong.",
-        "b": "The hammer broke the nail because it was thin.",
-        "ref_a": "hammer",
-        "ref_b": "nail",
-        "query_a": "strong",
-        "query_b": "thin",
-    },
-}
-
-
-# ---------------------------------------------------------------------------
-# Pure helpers (no Streamlit calls — testable in isolation)
-# ---------------------------------------------------------------------------
-
-
-def find_token_index(tokens: list[str], word: str) -> int | None:
-    """Last token whose decoded value equals ``word`` (case-insensitive, whitespace-stripped).
-
-    Many tokenizers prefix whitespace to non-initial tokens (e.g. GPT-2's
-    leading ``Ġ`` / a literal space). We strip and lowercase before comparing
-    so the demo accepts plain words from the user.
-
-    Returns
-    -------
-    int or None
-        The token index, or ``None`` if the word is not in ``tokens``.
-    """
-    target = word.strip().lower()
-    matches = [i for i, t in enumerate(tokens) if t.strip().lower() == target]
-    return matches[-1] if matches else None
-
-
-def best_flipping_head(
-    attn_a: torch.Tensor,
-    attn_b: torch.Tensor,
-    q_a: int,
-    q_b: int,
-    ref_a: int,
-    ref_b: int,
-    min_gap: float = 0.02,
-) -> tuple[int, int, float]:
-    """Pick the (layer, head) where the dominant referent flips most cleanly.
-
-    Score: for each head, compute the gap ``attn[q, ref_a] - attn[q, ref_b]`` in
-    each sentence; the score is the smaller absolute gap (so both directions
-    must be clear), and is zeroed unless the sign actually flips.
-
-    Returns
-    -------
-    layer : int
-    head : int
-    score : float
-        The min-magnitude flip score. ``0.0`` means no clean flip was found in
-        any head; the caller can render the chosen head anyway and warn.
-    """
-    diff_a = attn_a[:, :, q_a, ref_a] - attn_a[:, :, q_a, ref_b]
-    diff_b = attn_b[:, :, q_b, ref_a] - attn_b[:, :, q_b, ref_b]
-    flipped = torch.sign(diff_a) != torch.sign(diff_b)
-    min_mag = torch.minimum(diff_a.abs(), diff_b.abs())
-    score = torch.where(
-        flipped & (diff_a.abs() > min_gap) & (diff_b.abs() > min_gap),
-        min_mag,
-        torch.zeros_like(min_mag),
-    )
-    flat_idx = int(torch.argmax(score.flatten()).item())
-    n_heads = score.shape[1]
-    layer, head = divmod(flat_idx, n_heads)
-    return layer, head, float(score[layer, head].item())
-
-
-def attention_row(attn: torch.Tensor, layer: int, head: int, query: int) -> list[float]:
-    """Single attention row as a plain Python list (easier to test, easier to plot)."""
-    return attn[layer, head, query].tolist()
-
 
 # ---------------------------------------------------------------------------
 # Plotting
 # ---------------------------------------------------------------------------
 
 
-def _short_token_labels(tokens: list[str]) -> list[str]:
-    """Token labels for axes: visible whitespace, position suffix to disambiguate repeats."""
-    labels = []
-    for i, t in enumerate(tokens):
-        shown = t.replace(" ", "·").replace("\n", "↵")
-        labels.append(f"{shown}<sub>{i}</sub>")
-    return labels
+def render_attention_arcs(
+    tokens: list[str],
+    weights: list[float],
+    focus_idx: int,
+    hide_sink: bool = True,
+) -> go.Figure:
+    """Render the sentence as a vertical column of tokens with arcs from the focus token.
 
+    Tokens stack top-to-bottom (token 0 at the top), left-aligned. The focus
+    token is rendered in bold. Arcs sweep to the left of the column from the
+    focus token to every other token, with opacity proportional to the
+    attention weight. Future-token weights are zero in a causal LM, so those
+    arcs don't draw.
 
-def render_heatmap(tokens: list[str], attn_matrix: torch.Tensor) -> go.Figure:
-    """Plotly heatmap for a single (layer, head). Rows = queries, columns = keys."""
-    labels = _short_token_labels(tokens)
-    fig = go.Figure(
-        data=go.Heatmap(
-            z=attn_matrix.numpy(),
-            x=labels,
-            y=labels,
-            colorscale="Oranges",
-            zmin=0.0,
-            zmax=float(attn_matrix.max().item()),
-            hovertemplate="query: %{y}<br>key: %{x}<br>weight: %{z:.3f}<extra></extra>",
-            colorbar=dict(title="weight"),
-        )
-    )
-    fig.update_layout(
-        xaxis=dict(title="key (attended-to)", tickangle=-45, side="bottom"),
-        yaxis=dict(title="query (attending-from)", autorange="reversed"),
-        margin=dict(l=40, r=20, t=20, b=80),
-        height=max(360, 22 * len(tokens) + 120),
-    )
-    return fig
-
-
-def render_attention_bars(tokens: list[str], weights: list[float], highlight: dict[str, str]) -> go.Figure:
-    """Horizontal bar chart of attention from one query token to every key token.
-
-    ``highlight`` maps a token's stripped lowercase form to a fill color, used
-    to color the two candidate referents distinctly from the rest.
+    Parameters
+    ----------
+    hide_sink : bool
+        If True (default), suppress the arc to the first token. Many attention
+        heads dump residual attention onto the first token as a "sink," and
+        averaging across heads makes that sink dominate the visual. Hiding it
+        produces a cleaner picture of what the rest of the model is doing.
     """
-    base_color = "#cbd5e1"
-    colors = [highlight.get(t.strip().lower(), base_color) for t in tokens]
-    labels = _short_token_labels(tokens)
-    fig = go.Figure(
-        data=go.Bar(
-            x=weights,
-            y=labels,
-            orientation="h",
-            marker=dict(color=colors),
-            hovertemplate="%{y}: %{x:.3f}<extra></extra>",
+    n = len(tokens)
+    # Token i sits at y = -i so token 0 is at the top of the figure.
+    ys = [-i for i in range(n)]
+
+    display = []
+    for i, t in enumerate(tokens):
+        shown = t.strip() or t.replace(" ", "·").replace("\n", "↵") or "·"
+        display.append(f"<b>{shown}</b>" if i == focus_idx else shown)
+
+    fig = go.Figure()
+    arc_anchor_x = -0.05
+    fig.add_trace(
+        go.Scatter(
+            x=[0] * n,
+            y=ys,
+            mode="text",
+            text=display,
+            textposition="middle right",  # text extends right from x=0 → left-aligned column
+            textfont=dict(size=16),
+            hoverinfo="skip",
+            showlegend=False,
         )
     )
+
+    def _is_drawable(i: int) -> bool:
+        if i == focus_idx:
+            return False
+        if hide_sink and i == 0 and focus_idx != 0:
+            return False
+        return True
+
+    drawable_weights = [w for i, w in enumerate(weights) if _is_drawable(i) and w > 0]
+    max_w = max(drawable_weights) if drawable_weights else 1.0
+    max_peak_x_offset = 0.0
+    for i, w in enumerate(weights):
+        if not _is_drawable(i) or w <= 0:
+            continue
+        peak_x_offset = 0.4 + 0.15 * min(abs(focus_idx - i), 12)
+        max_peak_x_offset = max(max_peak_x_offset, peak_x_offset)
+        control_x = arc_anchor_x - peak_x_offset * 2
+        y_s = -focus_idx
+        y_t = -i
+        y_mid = (y_s + y_t) / 2
+        # Encode attention weight twice — opacity (fades low-attention arcs out) and
+        # line thickness (makes high-attention arcs visually pop). Both ramp from
+        # minimums when w is tiny to full strength when w == max_w.
+        w_norm = w / max_w if max_w > 0 else 0
+        fig.add_shape(
+            type="path",
+            path=f"M {arc_anchor_x},{y_s} Q {control_x},{y_mid} {arc_anchor_x},{y_t}",
+            line=dict(color="#9a3412", width=1 + 6 * w_norm),
+            opacity=min(1.0, w_norm),
+        )
+
     fig.update_layout(
-        xaxis=dict(title="attention weight", range=[0, max(weights) * 1.1 if weights else 1]),
-        yaxis=dict(autorange="reversed"),
-        margin=dict(l=40, r=20, t=20, b=40),
-        height=max(280, 22 * len(tokens) + 80),
+        xaxis=dict(visible=False, range=[arc_anchor_x - max_peak_x_offset - 0.3, 5]),
+        yaxis=dict(visible=False, range=[-(n - 1) - 0.5, 0.5]),
+        margin=dict(l=10, r=10, t=10, b=10),
+        height=max(280, 32 * n + 40),
         showlegend=False,
+        plot_bgcolor="rgba(0,0,0,0)",
+        paper_bgcolor="rgba(0,0,0,0)",
     )
     return fig
 
@@ -202,8 +130,9 @@ st.markdown(
     every token computes a weighted sum over every other token in the sequence.
     The weights — the *attention pattern* — are how the model routes context.
 
-    A model has many *heads* per layer. Different heads learn different routing
-    strategies: some track positional patterns, some link related words.
+    Different layers learn different routing strategies: early layers tend to
+    focus on nearby tokens, deeper layers link more distant, semantically
+    related ones.
     """
 )
 
@@ -221,22 +150,18 @@ n_heads = int(model.config.num_attention_heads)
 
 st.caption(f"Loaded **{spec.model_id}** — {n_layers} layers × {n_heads} heads per layer.")
 
-# ---------------------------------------------------------------------------
-# Section 1: interactive heatmap
-# ---------------------------------------------------------------------------
 st.markdown("---")
 st.markdown("### How tokens attend to each other")
 st.markdown(
     """
-    Pick a sentence (or write your own), then move the **layer** and **head** sliders
-    to see how a single attention head routes information across the sequence.
-
-    - Each row is a *query* token; each column is a *key* token.
-    - Brighter cells = stronger attention from the row to the column.
-    - The strict upper-triangle is empty: this is a causal LM, so a token can only
-      attend to itself and the tokens before it.
+    Pick a sentence (or write your own), then pick a **focus word**. The arcs
+    show which earlier words the focus word "paid attention to" inside the
+    model — darker arcs mean stronger attention. Move the **layer** slider to
+    see how the focus word's attention shifts at different depths of the
+    model.
     """
 )
+
 
 def _apply_preset() -> None:
     """Push the selected preset's text into the text-input's session state.
@@ -264,100 +189,74 @@ st.selectbox(
 )
 text = st.text_input("Sentence", key="attention_text")
 
-col_layer, col_head = st.columns(2)
-with col_layer:
-    layer = st.slider("Layer", 0, n_layers - 1, value=min(4, n_layers - 1), key="attention_layer")
-with col_head:
-    head = st.slider("Head", 0, n_heads - 1, value=min(3, n_heads - 1), key="attention_head")
+# Sliders are 1-indexed for display (friendlier for a non-technical audience);
+# the tensor is 0-indexed, so we subtract 1 before using the value internally.
+layer_display = st.slider("Layer", 1, n_layers, value=min(5, n_layers), key="attention_layer")
+layer = layer_display - 1
 
 if text.strip():
     tokens, attn = get_attentions(text, spec)
-    fig = render_heatmap(tokens, attn[layer, head])
+    # Use indices as the dropdown's underlying options so duplicate-token sentences
+    # ("the trophy ... the suitcase") still pick exactly one row; the labels stay bare.
+    # Default focus is the penultimate token — the last is usually a period.
+    default_focus = max(0, len(tokens) - 2)
+    focus_idx = st.selectbox(
+        "Focus word",
+        options=list(range(len(tokens))),
+        index=default_focus,
+        format_func=lambda i: tokens[i].strip() or repr(tokens[i]),
+    )
+    show_sink = st.checkbox(
+        "Show attention to the first token",
+        value=False,
+        help=(
+            "Transformer heads often dump residual attention onto the first token of the "
+            "sequence as a 'sink' — a known artifact. Hiding it (the default) usually makes "
+            "the rest of the attention pattern much easier to see."
+        ),
+    )
+    layer_attn = attn[layer].mean(dim=0)
+    weights = layer_attn[focus_idx].tolist()
+    fig = render_attention_arcs(tokens, weights, focus_idx, hide_sink=not show_sink)
     st.plotly_chart(fig, use_container_width=True)
     st.caption(
-        f"Layer {layer}, head {head}. Try layer 0 (often a strong diagonal — local positional attention) "
-        "vs. a middle/late layer (often longer-range, more semantic-looking)."
+        f"Layer {layer_display} of {n_layers}. Try layer 1 (the model is mostly looking at recent tokens) "
+        "vs. a deeper layer (longer-range connections)."
     )
 else:
     st.info("Type a sentence above to see its attention pattern.")
 
-# ---------------------------------------------------------------------------
-# Section 2: Winograd minimal pair
-# ---------------------------------------------------------------------------
 st.markdown("---")
-st.markdown("### Attention follows meaning, not just grammar")
-st.markdown(
-    """
-    These two sentences are identical except for **one word at the end** — but that
-    word flips which earlier noun the pronoun refers to. We auto-pick the head
-    whose attention pattern flips most cleanly across the pair, then plot it.
+with st.expander("Under the hood"):
+    st.markdown(
+        f"""
+        **Heads.** Each transformer layer doesn't compute one attention
+        pattern — it computes several in parallel, called *heads*. Each head
+        learns its own routing strategy: some attend to immediate neighbors,
+        some look for grammatical agreement, some link semantically related
+        words. The model loaded above ({spec.model_id}) has **{n_heads}
+        heads** per layer across **{n_layers} layers**.
 
-    What to watch: in each sentence we query attention from the **disambiguating
-    word** back to every token. The two highlighted bars are the candidate
-    referents. When the pair flips, the dominant bar should flip with it.
-    """
-)
+        Heads are an internal detail in this talk, so the arcs above the
+        sentence show the **mean attention across all {n_heads} heads** at
+        the selected layer. That gives a single, audience-friendly summary
+        of "what does this layer do" without having to pick a specific head.
+        The early-vs-late layer story (positional → semantic) still comes
+        through clearly in the average.
 
-pair_label = st.selectbox("Sentence pair", list(WINOGRAD_PAIRS.keys()), key="attention_pair")
-pair = WINOGRAD_PAIRS[pair_label]
+        **The first-token attention sink.** Trained transformers tend to
+        dump a large share of their attention onto the very first token of
+        the sequence — regardless of what that token is. This is a
+        well-documented phenomenon called an *attention sink* (Xiao et al.,
+        2023). The intuition: softmax forces every attention head's weights
+        to sum to 1, so when a head doesn't strongly need to attend to
+        anything in particular, the leftover mass gets dumped on whatever
+        token is always available — typically the first one. Averaging
+        across heads then makes that sink dominate the visual.
 
-tokens_a, attn_a = get_attentions(pair["a"], spec)
-tokens_b, attn_b = get_attentions(pair["b"], spec)
-
-q_a = find_token_index(tokens_a, pair["query_a"])
-q_b = find_token_index(tokens_b, pair["query_b"])
-ref_a_idx_in_a = find_token_index(tokens_a, pair["ref_a"])
-ref_b_idx_in_a = find_token_index(tokens_a, pair["ref_b"])
-ref_a_idx_in_b = find_token_index(tokens_b, pair["ref_a"])
-ref_b_idx_in_b = find_token_index(tokens_b, pair["ref_b"])
-
-required = [q_a, q_b, ref_a_idx_in_a, ref_b_idx_in_a, ref_a_idx_in_b, ref_b_idx_in_b]
-if any(idx is None for idx in required):
-    st.warning(
-        "Couldn't locate the query or referent tokens after tokenization with this model. "
-        "Try a different sentence pair or model."
-    )
-else:
-    # Auto-pick the cleanest flipping head for this model + pair.
-    # Use the same referent index in both sentences (they share the prefix), so look up in tokens_a.
-    layer_w, head_w, score = best_flipping_head(attn_a, attn_b, q_a, q_b, ref_a_idx_in_a, ref_b_idx_in_a)
-
-    if score == 0.0:
-        st.info(
-            f"No head in **{spec.model_id}** cleanly flips the dominant referent on this pair. "
-            f"Showing the layer-{layer_w}, head-{head_w} attempt anyway — read the bars carefully, "
-            "the signal will be subtle (or absent) in small models."
-        )
-    else:
-        st.markdown(
-            f"Auto-selected **layer {layer_w}, head {head_w}** "
-            f"<span style='color:{HUD_ACCENT}'>(flip score: {score:.3f})</span>",
-            unsafe_allow_html=True,
-        )
-
-    override = st.checkbox("Override head selection", key="attention_override")
-    if override:
-        col_l, col_h = st.columns(2)
-        with col_l:
-            layer_w = st.slider("Layer (override)", 0, n_layers - 1, value=layer_w, key="attention_override_layer")
-        with col_h:
-            head_w = st.slider("Head (override)", 0, n_heads - 1, value=head_w, key="attention_override_head")
-
-    highlight = {pair["ref_a"].lower(): HUD_ACCENT, pair["ref_b"].lower(): HIGHLIGHT_BG}
-
-    col_a, col_b = st.columns(2)
-    with col_a:
-        st.markdown(f"**Sentence A:** *{pair['a']}*")
-        st.caption(f"Querying from `{pair['query_a']}` at position {q_a}.")
-        weights_a = attention_row(attn_a, layer_w, head_w, q_a)
-        st.plotly_chart(render_attention_bars(tokens_a, weights_a, highlight), use_container_width=True)
-    with col_b:
-        st.markdown(f"**Sentence B:** *{pair['b']}*")
-        st.caption(f"Querying from `{pair['query_b']}` at position {q_b}.")
-        weights_b = attention_row(attn_b, layer_w, head_w, q_b)
-        st.plotly_chart(render_attention_bars(tokens_b, weights_b, highlight), use_container_width=True)
-
-    st.caption(
-        f"Highlighted bars: **{pair['ref_a']}** (orange) and **{pair['ref_b']}** (peach). "
-        "Same grammar, same vocabulary except for one word — and the model's attention shifts to match."
+        To keep the demo readable, we **hide the arc to the first token by
+        default**. The "Show attention to the first token" checkbox above
+        the chart toggles it back on if you want to see the raw pattern. The
+        underlying attention values aren't changed — only the rendering.
+        """
     )
