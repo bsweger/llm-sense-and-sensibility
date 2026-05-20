@@ -8,7 +8,11 @@
 import marimo
 
 __generated_with = "0.23.6"
-app = marimo.App(width="medium")
+app = marimo.App(
+    width="medium",
+    app_title="NPL Deep Dive: LLMs",
+    layout_file="layouts/slides.slides.json",
+)
 
 
 @app.cell
@@ -244,57 +248,85 @@ def _(mo):
 @app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
-    # Fancy autocomplete
+    # Jargon: embeddings
 
-    Training + inference
+    - An _embedding_ is a list of numbers
+    - Each token has an embedding that captures how it relates to every other token in the vocabulary
+    - The training process adjusts the embeddings until similar tokens end up with similar values
     """)
+    return
+
+
+@app.cell
+def _(mo):
+    mo.vstack([
+        mo.md("""
+        # Embeddings mental model
+        Consider the word _bank_
+        """),
+        mo.md("&nbsp;"),
+        mo.image(src="src/llm_sas/assets/embedding_space_before_after_training.png", width=600),
+    ])
+    return
+
+
+@app.cell
+def _(mo):
+    mo.vstack([
+        mo.md("""
+        # Embeddings - model's actual data structure (simplified)
+        """),
+        mo.md("&nbsp;"),
+        mo.image(src="src/llm_sas/assets/embeddings_as_model_data.png", width=600),
+    ])
+    return
+
+
+@app.cell
+def _(mo):
+    mo.vstack([
+        mo.md("""
+        # Jargon - inference
+        - _Inference_ is what happens when you send a prompt to an LLM
+        - The last token in the prompt represents the token _and_ everything the model has "figured out" about the rest of the prompt
+        """),
+        mo.md("&nbsp;"),
+        mo.image(src="src/llm_sas/assets/npl-deep-dive-llm-inference.png"),
+    ])
     return
 
 
 @app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
-    # Training
+    # Demo: inference
 
+    http://localhost:8501/next_token
+    """)
+    return
+
+
+@app.cell
+def _(mo):
+    mo.vstack([
+        mo.md("""
+        # Inference - one more thing
+        """),
+        mo.md("&nbsp;"),
+        mo.image(src="src/llm_sas/assets/npl-deep-dive-llm-inference wat.png"),
+    ])
+    return
+
+
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    # Last thoughts
+
+    - Biases
+        - Some organizations release "open weights" models (Google's Gemma family)
+        - Typically, these "open weights" models don't publish their training data
     -
-    """)
-    return
-
-
-@app.cell
-def _(mo):
-    mo.image("src/llm_sas/assets/embedding_space_before_after_training.png")
-    return
-
-
-@app.cell
-def _():
-    return
-
-
-@app.cell(hide_code=True)
-def _(mo):
-    mo.md(r"""
-    # Jargon: attention
-
-    > How each word picks up context from the words around it
-
-    - attention gathers and combines context
-    - its cumulative - the last word in a prompt represents the word _and_ everything the model has figured out from the rest of the prompt
-
-    ### Consider:
-
-    - I deposited the check at the bank by the river
-    - I watched the woman with the telescope
-    - The cat didn't fit in the carrier because it was too big
-    """)
-    return
-
-
-@app.cell(hide_code=True)
-def _(mo):
-    mo.md(r"""
-    # Demo: attention
     """)
     return
 
