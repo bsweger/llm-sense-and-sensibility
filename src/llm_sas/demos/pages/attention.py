@@ -14,6 +14,8 @@ dimension is hidden from the audience — heads are an internal detail in this
 high-level talk.
 """
 
+import math
+
 import plotly.graph_objects as go
 import streamlit as st
 
@@ -57,6 +59,9 @@ def render_attention_arcs(
     n = len(tokens)
     # Token i sits at y = -i so token 0 is at the top of the figure.
     ys = [-i for i in range(n)]
+    # Some small models (e.g. Pythia at certain layers) produce NaN attention
+    # values for some inputs; treat those as zero so we render cleanly.
+    weights = [0.0 if math.isnan(w) else float(w) for w in weights]
 
     display = []
     for i, t in enumerate(tokens):
@@ -215,7 +220,9 @@ if text.strip():
             "the rest of the attention pattern much easier to see."
         ),
     )
-    layer_attn = attn[layer].mean(dim=0)
+    # nanmean (not mean) so a single head returning NaN — which happens in some smaller
+    # models like Pythia at certain layers — doesn't poison the whole averaged row.
+    layer_attn = attn[layer].nanmean(dim=0)
     weights = layer_attn[focus_idx].tolist()
     fig = render_attention_arcs(tokens, weights, focus_idx, hide_sink=not show_sink)
     st.plotly_chart(fig, use_container_width=True)
