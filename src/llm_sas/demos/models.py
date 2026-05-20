@@ -70,9 +70,13 @@ def load_model(spec: ModelSpec):
     used by the attention-visualization demo. The fused SDPA / flash kernels
     that transformers picks by default skip producing those tensors. Eager is
     a touch slower but the perf hit on these small models is negligible.
+
+    ``dtype=torch.float32`` is forced because some checkpoints (e.g. Pythia-160m)
+    ship fp16 weights whose pre-softmax attention scores overflow under the eager
+    kernel, producing NaN logits. fp32 is safe across every model in MODELS.
     """
     tokenizer = AutoTokenizer.from_pretrained(spec.effective_tokenizer_id)
-    model = AutoModelForCausalLM.from_pretrained(spec.model_id, attn_implementation="eager")
+    model = AutoModelForCausalLM.from_pretrained(spec.model_id, attn_implementation="eager", dtype=torch.float32)
     model.eval()
     return tokenizer, model
 
