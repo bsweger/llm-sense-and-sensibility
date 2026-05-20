@@ -9,7 +9,7 @@ controls for temperature and top-k filtering.
 import streamlit as st
 import torch
 
-from llm_sas.demos.models import load_model, render_model_selector
+from llm_sas.demos.models import load_model, render_model_link, render_model_selector
 from llm_sas.theme import BODY_TEXT, HIGHLIGHT_BG, HUD_ACCENT
 
 TOP_K = 10  # number of candidate bars to display
@@ -400,3 +400,5 @@ render_candidates(natural_candidates, filtered_candidates, sampling_on, temperat
 action_candidates = filtered_candidates if sampling_on else natural_candidates
 st.markdown("")
 render_action_buttons(action_candidates, tokenizer, sampling_on, max_tokens)
+
+render_model_link(spec)

@@ -128,3 +128,20 @@ def render_model_selector(*, key: str, help: str | None = None) -> ModelSpec:
         st.header("Model")
         label = st.selectbox("Hugging Face model", list(MODELS.keys()), key=key, help=help)
     return MODELS[label]
+
+
+def render_model_link(spec: ModelSpec) -> None:
+    """Render a sidebar section linking to the model's Hugging Face page.
+
+    Call this at the bottom of each page (after any other ``st.sidebar`` writes)
+    so the link appears at the bottom of the sidebar.
+    """
+    with st.sidebar:
+        st.divider()
+        st.markdown(
+            f"**Model details**\n\n"
+            f'<span style="font-size: 0.85rem;">'
+            f'<a href="https://huggingface.co/{spec.model_id}">View {spec.model_id} on Hugging Face ↗</a>'
+            f"</span>",
+            unsafe_allow_html=True,
+        )

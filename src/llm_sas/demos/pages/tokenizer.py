@@ -10,7 +10,7 @@ from textwrap import dedent
 
 import streamlit as st
 
-from llm_sas.demos.models import load_tokenizer, render_model_selector
+from llm_sas.demos.models import load_tokenizer, render_model_link, render_model_selector
 from llm_sas.theme import BODY_TEXT, TOKEN_COLORS
 
 DEFAULT_PROMPT = dedent("""\
@@ -142,3 +142,5 @@ else:
     )
 
     st.markdown(format_inline_html(rows), unsafe_allow_html=True)
+
+render_model_link(spec)

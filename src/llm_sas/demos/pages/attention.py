@@ -19,7 +19,7 @@ import math
 import plotly.graph_objects as go
 import streamlit as st
 
-from llm_sas.demos.models import ModelSpec, get_attentions, load_model, render_model_selector
+from llm_sas.demos.models import ModelSpec, get_attentions, load_model, render_model_link, render_model_selector
 
 PRESETS: dict[str, str] = {
     "Pronoun reference": "The trophy didn't fit in the suitcase because it was too big.",
@@ -267,3 +267,5 @@ with st.expander("Under the hood"):
         underlying attention values aren't changed — only the rendering.
         """
     )
+
+render_model_link(spec)
