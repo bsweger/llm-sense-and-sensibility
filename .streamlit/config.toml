@@ -10,3 +10,4 @@ primaryColor = "#9a3412"             # burnt amber HUD — buttons, sliders, foc
 backgroundColor = "#fafaf9"          # very light stone — main canvas
 secondaryBackgroundColor = "#e7e5e4" # stone — sidebar, code blocks, info boxes
 textColor = "#1f2937"                # near-black — body text
+baseFontSize = 20                    # bumped from 16px default for presentation readability
