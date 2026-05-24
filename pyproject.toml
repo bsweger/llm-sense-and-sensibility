@@ -13,8 +13,8 @@ readme = "README.md"
 dependencies = [
     "rich",
     "structlog",
-    "torch>=2.11.0",
-    "transformers>=5.7.0",
+    "torch>=2.12.0",
+    "transformers>=5.8.1",
     "urllib3>=2.7.0",
     "streamlit>=1.57.0",
     "marimo>=0.23.6",
@@ -25,12 +25,12 @@ dependencies = [
 [dependency-groups]
 dev = [
     "coverage",
-    "huggingface-hub>=1.14.0",
+    "huggingface-hub>=1.15.0",
     "pre-commit",
     "pytest",
     "pytest-random-order>=1.1.1",
     "ruff",
-    "ty>=0.0.34",
+    "ty>=0.0.37",
     "websockets>=16.0",
 ]
 
