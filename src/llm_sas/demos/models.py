@@ -75,7 +75,7 @@ def load_model(spec: ModelSpec):
     ship fp16 weights whose pre-softmax attention scores overflow under the eager
     kernel, producing NaN logits. fp32 is safe across every model in MODELS.
     """
-    tokenizer = AutoTokenizer.from_pretrained(spec.effective_tokenizer_id)
+    tokenizer = load_tokenizer(spec)
     model = AutoModelForCausalLM.from_pretrained(spec.model_id, attn_implementation="eager", dtype=torch.float32)
     model.eval()
     return tokenizer, model
