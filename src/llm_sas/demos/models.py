@@ -48,6 +48,7 @@ class ModelSpec:
 MODELS: dict[str, ModelSpec] = {
     "GPT-2 (124M)": ModelSpec(model_id="openai-community/gpt2"),
     "Pythia-160m": ModelSpec(model_id="EleutherAI/pythia-160m"),
+    "Qwen2.5-0.5B": ModelSpec(model_id="Qwen/Qwen2.5-0.5B"),
     "GPT-2 Austen": ModelSpec(
         model_id="contextlab/gpt2-austen",
         tokenizer_id="openai-community/gpt2",
