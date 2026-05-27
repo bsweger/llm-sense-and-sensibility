@@ -15,7 +15,7 @@ from llm_sas.theme import BODY_TEXT, HIGHLIGHT_BG, HUD_ACCENT
 TOP_K = 10  # number of candidate bars to display
 BAR = "█"
 BAR_W = 30
-DEFAULT_PROMPT = "I was tired of pretending"
+DEFAULT_PROMPT = "I like to"
 
 
 def apply_sampling_filters(logits, temperature, top_k):

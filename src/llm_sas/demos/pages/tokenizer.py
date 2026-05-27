@@ -93,7 +93,7 @@ spec = render_model_selector(
 with st.spinner(f"Loading {spec.model_id} tokenizer…"):
     tokenizer = load_tokenizer(spec)
 
-prompt = st.text_area("Prompt", value=DEFAULT_PROMPT, key="tokenizer_prompt", height=200)
+prompt = st.text_area("Prompt", value=DEFAULT_PROMPT, key="tokenizer_prompt", height=250)
 
 if st.button("Tokenize prompt", type="primary"):
     st.session_state["tokenizer_rows"] = tokenize(tokenizer, prompt)
