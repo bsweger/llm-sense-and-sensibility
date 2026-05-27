@@ -89,11 +89,6 @@ def reset_to_prompt(tokenizer, prompt_text):
     st.session_state.prompt_value = prompt_text
 
 
-def pick_token(token_id):
-    """Append a token to the running sentence."""
-    st.session_state.token_ids = st.session_state.token_ids + [token_id]
-
-
 def sample_token_id(token_ids, model, temperature, top_k):
     """Sample one next-token id from the (filtered) distribution. Pure — easy to unit-test."""
     input_ids = torch.tensor([token_ids])
@@ -125,6 +120,23 @@ def greedy_token_id(token_ids, model):
     with torch.no_grad():
         logits = model(input_ids).logits[0, -1, :]
     return int(torch.argmax(logits).item())
+
+
+def pick_next_token():
+    """Streamlit on_click shim: read state, call greedy_token_id, append picked token.
+
+    Recomputing the argmax inside the handler — rather than passing a pre-bound
+    token id via ``args=`` — keeps rapid double-clicks correct. If the id were
+    bound at render time, a second click that landed before the rerun completed
+    would re-fire with the *previous* frame's id and append the same token
+    twice. Reading current state here means each click advances by exactly one
+    step against the latest sentence.
+    """
+    _, model = load_model(st.session_state.active_model)
+    token_ids = st.session_state.token_ids
+    if not token_ids:
+        return
+    st.session_state.token_ids = token_ids + [greedy_token_id(token_ids, model)]
 
 
 def generate_token_ids(token_ids, model, sampling_on, temperature, top_k, n_new_tokens):
@@ -316,8 +328,7 @@ def render_action_buttons(candidates, tokenizer, sampling_on, max_tokens):
         elif candidates:
             st.button(
                 f"Pick most likely: {candidates[0][0]}",
-                on_click=pick_token,
-                args=(candidates[0][1],),
+                on_click=pick_next_token,
                 type="primary",
                 use_container_width=True,
             )
@@ -335,7 +346,7 @@ def render_action_buttons(candidates, tokenizer, sampling_on, max_tokens):
 # ---------------------------------------------------------------------------
 # Page body
 # ---------------------------------------------------------------------------
-st.title("Text as Prediction")
+st.title("Inference: Text as Prediction")
 st.markdown(
     """
     LLMs are next-token predictors. At each step the model produces a probability
