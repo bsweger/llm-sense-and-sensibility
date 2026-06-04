@@ -60,13 +60,15 @@ MODELS: dict[str, ModelSpec] = {
 }
 
 
-@st.cache_resource(show_spinner=True)
+# max_entries=1 caps each cache at a single resident model to stay within
+# Streamlit Community Cloud's 1 GB per-app memory limit.
+@st.cache_resource(show_spinner=True, max_entries=1)
 def load_tokenizer(spec: ModelSpec):
     """Load just the tokenizer for the given spec. Cached per spec."""
     return AutoTokenizer.from_pretrained(spec.effective_tokenizer_id)
 
 
-@st.cache_resource(show_spinner=True)
+@st.cache_resource(show_spinner=True, max_entries=1)
 def load_model(spec: ModelSpec):
     """Load a causal LM and its tokenizer for the given spec. Cached per spec.
 
@@ -86,7 +88,7 @@ def load_model(spec: ModelSpec):
     return tokenizer, model
 
 
-@st.cache_data(show_spinner=False)
+@st.cache_data(show_spinner=False, max_entries=1)
 def get_attentions(text: str, spec: ModelSpec) -> tuple[list[str], torch.Tensor]:
     """Run a forward pass and return per-layer self-attention weights.
 
