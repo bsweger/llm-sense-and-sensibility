@@ -18,9 +18,9 @@ Run the demos:
     uvx --from git+https://github.com/bsweger/llm-sense-and-sensibility llmdemo
     ```
 
-## Deploying the demos on Streamlit Community Cloud
+## Deploying the demos to Streamlit Community Cloud
 
-The demos can be published as a free, public app on
+The demos can be published as a public app on
 [Streamlit Community Cloud](https://streamlit.io/cloud).
 
 1. Push this repository to GitHub (it must be public).
@@ -32,15 +32,13 @@ The demos can be published as a free, public app on
 
 Notes:
 
-- Cloud installs dependencies from `uv.lock`. On Linux it pulls the CPU-only
-  `torch` build (configured in `pyproject.toml`), so the multi-GB CUDA stack is
-  never downloaded.
-- No secrets are required: every model in the catalog is public on the Hugging
-  Face Hub, so no `HF_TOKEN` is needed.
-- The theme in `.streamlit/config.toml` is applied automatically.
-- Community Cloud caps each app at 1 GB of memory. The model caches are limited
-  to one resident model at a time (`max_entries=1`), so switching models in the
-  sidebar evicts the previous one.
+- Streamlit Community Cloud installs from `src/llm_sas/demos/requirements.txt`,
+  which is exported from `uv.lock` by a
+  [pre-commit hook](scripts/gen_cloud_requirements.sh). On Linux it pins the
+  CPU-only `torch` build, so the multi-GB CUDA stack is never downloaded.
+- Every model in the demo is public on the Hugging Face Hub (no secrets needed).
+- Streamlit Community Cloud has a 1 GB memory limitation. Thus, only one model
+  at a time is cached.
 
 ## Project setup (for local development)
 

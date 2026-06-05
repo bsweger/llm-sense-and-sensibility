@@ -22,7 +22,11 @@ project uses [Semantic Versioning](https://semver.org/).
   `get_attentions` helper on the shared models module that pulls
   per-layer self-attention via `output_attentions=True`.
 - `plotly` added as a runtime dependency for the attention visualizations.
-- Streamlit Community Cloud deployment instructions in `README.md`.
+- Streamlit Community Cloud deployment: instructions in `README.md`, plus
+  `scripts/gen_cloud_requirements.sh` and a pre-commit hook that export
+  `src/llm_sas/demos/requirements.txt` from `uv.lock` (Cloud's bundled `uv`
+  can't parse the lockfile, so it reads this exported file from the entrypoint
+  directory instead).
 
 ### Changed
 
@@ -33,6 +37,8 @@ project uses [Semantic Versioning](https://semver.org/).
 - On Linux, `torch` now resolves to the CPU-only build from the PyTorch CPU
   index (via `[tool.uv.sources]`), avoiding the multi-GB CUDA download on
   Community Cloud. macOS is unaffected.
+- `demos.py` builds page paths from `llm_sas.PROJECT_DIR` instead of paths
+  relative to the entrypoint.
 - `load_model` now loads with `attn_implementation="eager"` so per-head
   attention probabilities are available to the attention demo. Negligible
   perf impact on the small models in the catalog.

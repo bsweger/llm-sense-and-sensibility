@@ -5,6 +5,14 @@ repos:
   rev: 0.9.16
   hooks:
     - id: uv-lock
+- repo: local
+  hooks:
+    - id: cloud-requirements
+      name: export Streamlit Cloud requirements.txt from uv.lock
+      entry: scripts/gen_cloud_requirements.sh
+      language: script
+      files: ^(uv\.lock|pyproject\.toml)$
+      pass_filenames: false
 - repo: https://github.com/astral-sh/ruff-pre-commit
     # run linter and formmat code
   rev: v0.14.8
