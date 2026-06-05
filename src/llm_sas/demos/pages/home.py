@@ -5,7 +5,12 @@ import streamlit as st
 st.title("LLMs Under the Hood: Demos")
 st.markdown(
     """
-    Use the sidebar to pick a demo.
+    Use the sidebar to pick a demo. Each of the demos below can be run using
+    one of several models, to illustrate the differences.
+
+    **Note:** The _Qwen2.5-0.5B_ model is included to represent a newer
+    generation of local models. While still small, it's much larger than the
+    other models used in the demo, and using it will be slow.
 
     ### Tokenization
     Shows how a prompt gets split into individual tokens. The same text gets sliced
