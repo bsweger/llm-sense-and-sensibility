@@ -225,7 +225,7 @@ if text.strip():
     layer_attn = attn[layer].nanmean(dim=0)
     weights = layer_attn[focus_idx].tolist()
     fig = render_attention_arcs(tokens, weights, focus_idx, hide_sink=not show_sink)
-    st.plotly_chart(fig, use_container_width=True)
+    st.plotly_chart(fig, width="stretch")
     st.caption(
         f"Layer {layer_display} of {n_layers}. Try layer 1 (the model is mostly looking at recent tokens) "
         "vs. a deeper layer (longer-range connections)."

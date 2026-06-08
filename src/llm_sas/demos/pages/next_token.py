@@ -315,7 +315,7 @@ def render_action_buttons(candidates, tokenizer, sampling_on, max_tokens):
                 on_click=generate_next_tokens,
                 disabled=not candidates,
                 type="primary",
-                use_container_width=True,
+                width="stretch",
             )
         elif sampling_on:
             st.button(
@@ -323,23 +323,23 @@ def render_action_buttons(candidates, tokenizer, sampling_on, max_tokens):
                 on_click=sample_next_token,
                 disabled=not candidates,
                 type="primary",
-                use_container_width=True,
+                width="stretch",
             )
         elif candidates:
             st.button(
                 f"Pick most likely: {candidates[0][0]}",
                 on_click=pick_next_token,
                 type="primary",
-                use_container_width=True,
+                width="stretch",
             )
         else:
-            st.button("Pick most likely", disabled=True, use_container_width=True)
+            st.button("Pick most likely", disabled=True, width="stretch")
     with col_reset:
         st.button(
             "Reset to prompt",
             on_click=reset_to_prompt,
             args=(tokenizer, st.session_state.prompt_value),
-            use_container_width=True,
+            width="stretch",
         )
 
 

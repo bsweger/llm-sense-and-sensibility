@@ -1,7 +1,12 @@
+import logging
 import sys
 from pathlib import Path
 
 import streamlit as st
+
+# Quiet the warnings Streamlit's source watcher logs while walking transformers'
+# lazy modules (failed optional torchvision imports) on every rerun.
+logging.getLogger("streamlit.watcher.local_sources_watcher").setLevel(logging.ERROR)
 
 # Put src/ on the path so the llm_sas package imports without being installed:
 # Streamlit Community Cloud can't build it (no git metadata for the version).
