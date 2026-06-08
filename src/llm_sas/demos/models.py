@@ -74,16 +74,16 @@ def load_model(spec: ModelSpec):
 
     The model is loaded with ``attn_implementation="eager"`` so that
     ``output_attentions=True`` returns the per-head attention probability tensors
-    used by the attention-visualization demo. The fused SDPA / flash kernels
-    that transformers picks by default skip producing those tensors. Eager is
-    a touch slower but the perf hit on these small models is negligible.
+    used by the attention-visualization demo (by default, the transformers
+    library doesn't produce those tensors).
 
-    ``dtype=torch.float32`` is forced because some checkpoints (e.g. Pythia-160m)
-    ship fp16 weights whose pre-softmax attention scores overflow under the eager
-    kernel, producing NaN logits. fp32 is safe across every model in MODELS.
+    This function forces dtype to ``bfloat16``, which reduces the models'
+    memory footprint (Streamlit Community caps memory at 1GB) while still
+    ensuring that models with fp16 checkpoints (e.g., Pythia-160m) will not
+    overflow in the attention demo).
     """
     tokenizer = load_tokenizer(spec)
-    model = AutoModelForCausalLM.from_pretrained(spec.model_id, attn_implementation="eager", dtype=torch.float32)
+    model = AutoModelForCausalLM.from_pretrained(spec.model_id, attn_implementation="eager", dtype=torch.bfloat16)
     model.eval()
     return tokenizer, model
 

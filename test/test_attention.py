@@ -22,6 +22,8 @@ def test_get_attentions_returns_expected_shape_for_gpt2():
     # GPT-2 small: 12 layers, 12 heads.
     assert attn.shape[0] == 12
     assert attn.shape[1] == 12
-    # Causal mask: each row sums to ~1.
-    row_sums = attn.sum(dim=-1)
-    assert torch.allclose(row_sums, torch.ones_like(row_sums), atol=1e-5)
+    # Causal mask: each row sums to ~1. bf16 rounds each value to ~3 significant
+    # figures, so the sum can drift from 1 by ~0.004; sum in fp32 and allow 1e-2
+    # (fp32 attentions needed only 1e-5).
+    row_sums = attn.float().sum(dim=-1)
+    assert torch.allclose(row_sums, torch.ones_like(row_sums), atol=1e-2)
