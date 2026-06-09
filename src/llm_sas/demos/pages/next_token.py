@@ -244,6 +244,20 @@ def render_generation_controls():
     """Render sidebar widgets and return (sampling_on, temperature, top_k, max_tokens)."""
     with st.sidebar:
         st.header("Next token controls")
+        max_tokens = st.slider(
+            "Tokens to generate per click",
+            min_value=1,
+            max_value=50,
+            value=1,
+            step=1,
+            key="max_tokens",
+            help=(
+                "How many tokens to produce in one click. At 1 (default) you advance one "
+                "token at a time. When the value is greater than 1, the same "
+                "decoding strategy runs in a loop N times — "
+                "every step makes its own forward pass and its own decoding decision."
+            ),
+        )
         mode = st.radio(
             "Mode",
             ["Greedy", "Sampling"],
@@ -286,19 +300,6 @@ def render_generation_controls():
                 "Only let the top K most-likely words compete; ignore the rest. Smaller K "
                 "keeps choices focused on safe bets. 0 turns the filter off (every word in "
                 "the vocabulary is eligible)."
-            ),
-        )
-        max_tokens = st.slider(
-            "Tokens to generate per click",
-            min_value=1,
-            max_value=50,
-            value=1,
-            step=1,
-            key="max_tokens",
-            help=(
-                "How many tokens to produce in one click. At 1 (default) you advance one "
-                "token at a time. At N>1 the same decoding strategy runs in a loop N times — "
-                "every step makes its own forward pass and its own decoding decision."
             ),
         )
 
