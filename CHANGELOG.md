@@ -28,6 +28,9 @@ project uses [Semantic Versioning](https://semver.org/).
 
 ### Changed
 
+- Model selection is now a single shared setting across all demos.
+- Inference demo: the "Tokens to generate per click" slider is now the first
+  control under "Next token controls".
 - Dropped demo numbering from page titles, nav entries, and docstrings.
 - Model caches (`load_model`, `load_tokenizer`, `get_attentions`) limited to
   `max_entries=1` so only one model is resident at a time, staying within

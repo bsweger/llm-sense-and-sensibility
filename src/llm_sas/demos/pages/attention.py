@@ -19,7 +19,7 @@ import math
 import plotly.graph_objects as go
 import streamlit as st
 
-from llm_sas.demos.models import ModelSpec, get_attentions, load_model, render_model_link, render_model_selector
+from llm_sas.demos.models import ModelSpec, current_model_spec, get_attentions, load_model, render_model_link
 
 PRESETS: dict[str, str] = {
     "Pronoun reference": "The trophy didn't fit in the suitcase because it was too big.",
@@ -141,13 +141,7 @@ st.markdown(
     """
 )
 
-spec: ModelSpec = render_model_selector(
-    key="attention_model",
-    help=(
-        "Different models have different layer/head counts and different learned routing "
-        "strategies. Switching models recomputes the attention pattern and re-fits the controls."
-    ),
-)
+spec: ModelSpec = current_model_spec()
 with st.spinner(f"Loading {spec.model_id}…"):
     _, model = load_model(spec)
 n_layers = int(model.config.num_hidden_layers)

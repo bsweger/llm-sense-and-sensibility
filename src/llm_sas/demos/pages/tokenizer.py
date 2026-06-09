@@ -10,7 +10,7 @@ from textwrap import dedent
 
 import streamlit as st
 
-from llm_sas.demos.models import load_tokenizer, render_model_link, render_model_selector
+from llm_sas.demos.models import current_model_spec, load_tokenizer, render_model_link
 from llm_sas.theme import BODY_TEXT, TOKEN_COLORS
 
 DEFAULT_PROMPT = dedent("""\
@@ -83,13 +83,7 @@ st.markdown(
     """
 )
 
-spec = render_model_selector(
-    key="tokenizer_model",
-    help=(
-        "Each model has its own tokenizer. The same prompt can result in a different "
-        "number of tokens and different token boundaries depending on which model you pick."
-    ),
-)
+spec = current_model_spec()
 with st.spinner(f"Loading {spec.model_id} tokenizer…"):
     tokenizer = load_tokenizer(spec)
 

@@ -123,21 +123,33 @@ def get_attentions(text: str, spec: ModelSpec) -> tuple[list[str], torch.Tensor]
     return tokens, attn
 
 
-def render_model_selector(*, key: str, help: str | None = None) -> ModelSpec:
-    """Render a sidebar model picker and return the chosen ModelSpec.
+# All demos share one model selection: the chosen model is a global setting, so
+# switching demos keeps it, and changing it on any page changes it everywhere.
+MODEL_SELECT_KEY = "selected_model_label"
+
+
+def render_model_selector(*, help: str | None = None) -> ModelSpec:
+    """Render the shared sidebar model picker and return the chosen ModelSpec.
+
+    Rendered once from the entrypoint (``demos.py``) before ``pg.run()``, so the
+    same widget instance appears on every page and the selection carries across
+    demos. Pages read the choice with :func:`current_model_spec`.
 
     Parameters
     ----------
-    key : str
-        Streamlit widget key — must be unique per page so each demo tracks its
-        own selection independently.
     help : str, optional
-        Tooltip text shown next to the selector. Pages can use this to explain
-        what changing the model means in the context of their own demo.
+        Tooltip text shown next to the selector.
     """
     with st.sidebar:
         st.header("Model")
-        label = st.selectbox("Hugging Face model", list(MODELS.keys()), key=key, help=help)
+        label = st.selectbox("Hugging Face model", list(MODELS.keys()), key=MODEL_SELECT_KEY, help=help)
+        st.caption(f"Active model: {label}")
+    return current_model_spec()
+
+
+def current_model_spec() -> ModelSpec:
+    """Return the ModelSpec for the currently selected model (defaults to the first)."""
+    label = st.session_state.get(MODEL_SELECT_KEY, next(iter(MODELS)))
     return MODELS[label]
 
 

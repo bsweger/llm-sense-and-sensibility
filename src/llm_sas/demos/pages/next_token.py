@@ -9,7 +9,7 @@ controls for temperature and top-k filtering.
 import streamlit as st
 import torch
 
-from llm_sas.demos.models import load_model, render_model_link, render_model_selector
+from llm_sas.demos.models import current_model_spec, load_model, render_model_link
 from llm_sas.theme import BODY_TEXT, HIGHLIGHT_BG, HUD_ACCENT
 
 TOP_K = 10  # number of candidate bars to display
@@ -357,14 +357,7 @@ st.markdown(
 )
 
 init_state()
-spec = render_model_selector(
-    key="next_token_model",
-    help=(
-        "Different models were trained on different data and produce different "
-        "distributions for the same prompt. Switching models resets the running "
-        "sentence because tokenizers differ between model families."
-    ),
-)
+spec = current_model_spec()
 with st.spinner(f"Loading {spec.model_id}…"):
     tokenizer, model = load_model(spec)
 

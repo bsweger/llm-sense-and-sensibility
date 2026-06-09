@@ -13,6 +13,7 @@ logging.getLogger("streamlit.watcher.local_sources_watcher").setLevel(logging.ER
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
 from llm_sas import PROJECT_DIR  # noqa: E402
+from llm_sas.demos.models import render_model_selector  # noqa: E402
 
 _PAGES_DIR = PROJECT_DIR / "demos" / "pages"
 
@@ -29,4 +30,15 @@ pages = [
 ]
 
 pg = st.navigation(pages)
+
+# Render the shared model picker once, before running the page, so the same
+# widget appears on every page and the selection carries across demos.
+render_model_selector(
+    help=(
+        "All demos use this model. Each model has its own tokenizer, was trained on "
+        "different data, and has its own layer/head counts, so switching it changes "
+        "tokenization, the predicted distribution, and the attention pattern."
+    ),
+)
+
 pg.run()
