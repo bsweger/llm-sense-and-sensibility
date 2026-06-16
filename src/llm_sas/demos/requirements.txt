@@ -210,7 +210,7 @@ toml==0.10.2
     # via streamlit
 tomlkit==0.15.0
     # via marimo
-torch==2.11.0 ; sys_platform != 'linux'
+torch==2.12.0+cpu ; sys_platform != 'linux'
     # via llm-sas
 torch==2.12.0+cpu ; sys_platform == 'linux'
     # via llm-sas
