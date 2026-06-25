@@ -12,7 +12,7 @@ readme = "README.md"
 
 dependencies = [
     "structlog",
-    "torch>=2.12.0",
+    "torch>=2.12.1",
     "transformers>=5.12.0",
     "urllib3>=2.7.0",
     "streamlit>=1.58.0",
