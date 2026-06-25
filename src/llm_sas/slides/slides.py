@@ -18,6 +18,7 @@ app = marimo.App(
 @app.cell
 def _():
     from pathlib import Path
+
     import marimo as mo
     ASSETS = mo.notebook_dir() / "assets"
     DEMO_URL = Path("https://llm-demos.streamlit.app/")
