@@ -10,7 +10,9 @@ st.markdown(
 
     **Note:** The _Qwen2.5-0.5B_ model is included to represent a newer
     generation of local models. While still small, it's much larger than the
-    other models used in the demo, and using it will be slow.
+    other models used in the demo, and using it will be slow. It might even
+    break, since the demos are running on a platform tier with limited
+    memory.
 
     ### Tokenization
     Shows how a prompt gets split into individual tokens. The same text gets sliced
