@@ -130,7 +130,7 @@ pandas==3.0.2
     # via streamlit
 parso==0.8.7
     # via jedi
-pillow==12.2.0
+pillow==12.3.0
     # via streamlit
 plotly==6.7.0
     # via llm-sas
@@ -210,7 +210,7 @@ toml==0.10.2
     # via streamlit
 tomlkit==0.15.0
     # via marimo
-torch==2.12.0+cpu ; sys_platform != 'linux'
+torch==2.12.1+cpu ; sys_platform != 'linux'
     # via llm-sas
 torch==2.12.0+cpu ; sys_platform == 'linux'
     # via llm-sas
