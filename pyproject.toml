@@ -40,7 +40,7 @@ llmdemo = "llm_sas.app:main"
 [project.urls]
 
 [build-system]
-requires = ["setuptools>=82.0.1", "wheel", "setuptools_scm>=10.0.5"]
+requires = ["setuptools>=83.0.0", "wheel", "setuptools_scm>=10.0.5"]
 build-backend = "setuptools.build_meta"
 
 [tool.setuptools.packages.find]
