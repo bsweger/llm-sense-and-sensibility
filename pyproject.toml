@@ -36,6 +36,7 @@ dev = [
 
 [project.scripts]
 llmdemo = "llm_sas.app:main"
+llmslides = "llm_sas.slides.slides:main"
 
 [project.urls]
 
@@ -68,6 +69,7 @@ extend-select = [
 ]
 
 [tool.ruff.lint.extend-per-file-ignores]
+"src/llm_sas/slides/slides.py" = ["S603"]  # allow subprocess command to execute marimo
 "test/**/*.py" = [
     # at least this three should be fine in tests:
     "S101",  # allow assert in tests

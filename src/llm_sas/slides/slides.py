@@ -206,5 +206,20 @@ def _(mo):
     """)
 
 
+@app.function
+def main() -> None:
+    import shutil
+    import subprocess
+    from pathlib import Path
+
+    notebook = Path(__file__).resolve()
+    marimo_path = shutil.which("marimo")
+    if not marimo:
+        raise SystemExit("Unable to run slides (could not locate marimo)")
+    raise SystemExit(
+        subprocess.call([marimo_path, "run", str(notebook)])
+    )
+
+
 if __name__ == "__main__":
     app.run()

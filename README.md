@@ -1,13 +1,41 @@
 # LLM Sense and Sensibility
 
-Presentation to de-mystify LLMs
+Presentation to de-mystify LLMs. Note that the interactive demos run slowly
+because they're hosted on
+[Streamlit's free community platform](https://streamlit.io/cloud),
+which has limited memory.
 
-## Running the demos on your machine
+- [slides (html)](src/llm_sas/slides/llm_slides.html)
+- [slides (pdf)](src/llm_sas/slides/llm_slides.pdf)
+- [interactive demos](https://llm-demos.streamlit.app)
 
-**Prerequisite:** [uv is installed](https://docs.astral.sh/uv/getting-started/installation/). `uv` is a fast, popular Python package manager that can run
+## Running the slides and demos on your machine
+
+The rest of this document contains information for people who want to
+run the slides and demos on a local machine. For example, you may want
+to run the interactive demos on your own laptop instead of via Streamlit's
+community platform.
+
+**Prerequisite:** [uv is installed](https://docs.astral.sh/uv/getting-started/installation/).
+`uv` is a fast, popular Python package manager that can run
 Python applications on your local machine with no setup.
 
-Run the demos:
+### Run the slides from local a web browser:
+
+The slides are a [marimo notebook](https://docs.marimo.io/) under the hood.
+To run the notebook from GitHub:
+
+1. Open the terminal on your machine. On Windows, this is the command prompt
+   (cmd.exe), PowerShell, or the Windows Terminal. On a Macbook, you can use
+   the Terminal application (Terminal.app)
+2. Enter the following command into your terminal to view the slide in a web browser:
+
+    ```bash
+    uvx --from git+https://github.com/bsweger/llm-sense-and-sensibility/ llmslides
+    ```
+3. If prompted to `Run in a sandboxes venv containing this notebook's dependencies?`, answer `Y`
+
+### Run the demos from a locally-hosted Streamlit server:
 
 1. Open the terminal on your machine. On Windows, this is the command prompt
    (cmd.exe), PowerShell, or the Windows Terminal. On a Macbook, you can use
