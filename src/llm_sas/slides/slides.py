@@ -31,7 +31,6 @@ def _(mo):
     # LLM deep dive: what's in there?
     ![Murderbot looking with trepidation](https://media4.giphy.com/media/v1.Y2lkPTc5MGI3NjExNDQxZDJzbm81NngyejhpbjM4NTByeGQ4bmxzaW5oczJucHAzbWtkZyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/9E4bVh3EKeM9Ls6kZR/giphy.gif)
     """)
-    return
 
 
 @app.cell(hide_code=True)
@@ -43,7 +42,6 @@ def _(mo):
     - Demo foundational concepts
     - Strengthen mental models around LLMs
     """)
-    return
 
 
 @app.cell(hide_code=True)
@@ -58,7 +56,6 @@ def _(mo):
     - Non-language examples (music, image generation)
     - Practical use cases
     """)
-    return
 
 
 @app.cell(hide_code=True)
@@ -74,7 +71,6 @@ def _(mo):
     - Usually refers to models based on a transformer architecture
     - [_Attention is All You Need_](https://arxiv.org/abs/1706.03762): 2017 paper that started our current era of language models
     """)
-    return
 
 
 @app.cell(hide_code=True)
@@ -90,7 +86,6 @@ def _(mo):
     #
     #
     """)
-    return
 
 
 @app.cell
@@ -99,7 +94,6 @@ def _(mo):
     ## Click below for a one-minute explainer
     [![Thumbnail for neural networks explained in a minute](https://img.youtube.com/vi/rEDzUT3ymw4/hqdefault.jpg)](https://www.youtube.com/watch?v=rEDzUT3ymw4)
     """)
-    return
 
 
 @app.cell(hide_code=True)
@@ -113,7 +107,6 @@ def _(ASSETS, mo):
         mo.md("&nbsp;"),
         mo.image(src=ASSETS / "model_training_phases.png", width=600),
     ])
-    return
 
 
 @app.cell(hide_code=True)
@@ -126,7 +119,6 @@ def _(mo):
     - every model has its own "tokenizer" that determines how language is broken down into tokens
     - a model's _vocabulary_ is the number of unique tokens a model understands and generates
     """)
-    return
 
 
 @app.cell(hide_code=True)
@@ -135,7 +127,6 @@ def _(DEMO_URL, mo):
     # Demo: tokenization
     [{DEMO_URL}/tokenizer]({DEMO_URL}/tokenizer)
     """)
-    return
 
 
 @app.cell(hide_code=True)
@@ -147,7 +138,6 @@ def _(mo):
     - An _embedding_ is a list of numbers
     - The training process adjusts the embeddings until similar tokens end up with similar values
     """)
-    return
 
 
 @app.cell
@@ -159,7 +149,6 @@ def _(ASSETS, mo):
         mo.md("&nbsp;"),
         mo.image(src=ASSETS / "embedding_space_before_after_training.png", width=700),
     ])
-    return
 
 
 @app.cell
@@ -171,7 +160,6 @@ def _(ASSETS, mo):
         mo.md("&nbsp;"),
         mo.image(src=ASSETS / "embeddings_as_model_data.png", width=700),
     ])
-    return
 
 
 @app.cell
@@ -185,7 +173,6 @@ def _(ASSETS, mo):
         mo.md("&nbsp;"),
         mo.image(src=ASSETS / "llm_inference.png"),
     ])
-    return
 
 
 @app.cell
@@ -194,7 +181,6 @@ def _(DEMO_URL, mo):
     # Demo: inference
     [{DEMO_URL}/inference]({DEMO_URL}/next_token)
     """)
-    return
 
 
 @app.cell
@@ -206,7 +192,6 @@ def _(ASSETS, mo):
         mo.md("&nbsp;"),
         mo.image(src=ASSETS / "llm_inference_wat.png"),
     ])
-    return
 
 
 @app.cell(hide_code=True)
@@ -219,7 +204,6 @@ def _(mo):
         - Typically, these "open weights" models don't publish their training data
     - Retaining voice
     """)
-    return
 
 
 if __name__ == "__main__":

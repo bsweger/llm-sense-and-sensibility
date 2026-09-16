@@ -12,8 +12,8 @@ logging.getLogger("streamlit.watcher.local_sources_watcher").setLevel(logging.ER
 # Streamlit Community Cloud can't build it (no git metadata for the version).
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
-from llm_sas import PROJECT_DIR  # noqa: E402
-from llm_sas.demos.models import render_model_selector  # noqa: E402
+from llm_sas import PROJECT_DIR
+from llm_sas.demos.models import render_model_selector
 
 _PAGES_DIR = PROJECT_DIR / "demos" / "pages"
 

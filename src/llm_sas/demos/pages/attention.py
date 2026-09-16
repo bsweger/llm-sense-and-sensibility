@@ -77,7 +77,7 @@ def render_attention_arcs(
             mode="text",
             text=display,
             textposition="middle right",  # text extends right from x=0 → left-aligned column
-            textfont=dict(size=16),
+            textfont={"size": 16},
             hoverinfo="skip",
             showlegend=False,
         )
@@ -86,9 +86,7 @@ def render_attention_arcs(
     def _is_drawable(i: int) -> bool:
         if i == focus_idx:
             return False
-        if hide_sink and i == 0 and focus_idx != 0:
-            return False
-        return True
+        return not (hide_sink and i == 0 and focus_idx != 0)
 
     drawable_weights = [w for i, w in enumerate(weights) if _is_drawable(i) and w > 0]
     max_w = max(drawable_weights) if drawable_weights else 1.0
@@ -109,14 +107,14 @@ def render_attention_arcs(
         fig.add_shape(
             type="path",
             path=f"M {arc_anchor_x},{y_s} Q {control_x},{y_mid} {arc_anchor_x},{y_t}",
-            line=dict(color="#9a3412", width=1 + 6 * w_norm),
+            line={"color": "#9a3412", "width": 1 + 6 * w_norm},
             opacity=min(1.0, w_norm),
         )
 
     fig.update_layout(
-        xaxis=dict(visible=False, range=[arc_anchor_x - max_peak_x_offset - 0.3, 5]),
-        yaxis=dict(visible=False, range=[-(n - 1) - 0.5, 0.5]),
-        margin=dict(l=10, r=10, t=10, b=10),
+        xaxis={"visible": False, "range": [arc_anchor_x - max_peak_x_offset - 0.3, 5]},
+        yaxis={"visible": False, "range": [-(n - 1) - 0.5, 0.5]},
+        margin={"l": 10, "r": 10, "t": 10, "b": 10},
         height=max(280, 32 * n + 40),
         showlegend=False,
         plot_bgcolor="rgba(0,0,0,0)",
