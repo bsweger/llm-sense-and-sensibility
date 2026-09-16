@@ -1,8 +1,18 @@
 # LLM Sense and Sensibility
 
-Presentation to de-mystify LLMs
+Presentation to de-mystify LLMs. Note that the interactive demos run slowly
+because they're hosted on
+[Streamlit's free community platform](https://streamlit.io/cloud),
+which has limited memory.
 
-## Running the demos on your machine
+- [slides (html)](src/llm_sas/slides/llm_slides.html)
+- [slides (pdf)](src/llm_sas/slides/llm_slides.pdf)
+- [interactive demos](https://llm-demos.streamlit.app)
+
+## Running or modifying the slides and demos on your machine
+
+The rest of this document contains information for developers who want to
+run or edit the slides and demos on a local machine.
 
 **Prerequisite:** [uv is installed](https://docs.astral.sh/uv/getting-started/installation/). `uv` is a fast, popular Python package manager that can run
 Python applications on your local machine with no setup.
