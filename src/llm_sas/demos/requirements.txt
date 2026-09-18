@@ -49,7 +49,7 @@ fsspec==2026.4.0
     #   torch
 gitdb==4.0.12
     # via gitpython
-gitpython==3.1.50
+gitpython==3.1.59
     # via streamlit
 h11==0.16.0
     # via
@@ -130,7 +130,7 @@ pandas==3.0.2
     # via streamlit
 parso==0.8.7
     # via jedi
-pillow==12.2.0
+pillow==12.3.0
     # via streamlit
 plotly==6.7.0
     # via llm-sas
@@ -152,7 +152,7 @@ pygments==2.20.0
     # via
     #   marimo
     #   rich
-pymdown-extensions==10.21.3
+pymdown-extensions==11.0.1
     # via marimo
 python-dateutil==2.9.0.post0
     # via pandas
@@ -184,7 +184,7 @@ rpds-py==0.30.0
     #   referencing
 safetensors==0.7.0
     # via transformers
-setuptools==81.0.0
+setuptools==83.0.0
     # via torch
 shellingham==1.5.4
     # via typer
@@ -218,7 +218,7 @@ tqdm==4.67.3
     # via
     #   huggingface-hub
     #   transformers
-transformers==5.8.0
+transformers==5.10.1
     # via llm-sas
 typer==0.25.1
     # via
